@@ -9,12 +9,12 @@ public class UserController : ControllerBase
 {       
     // Endpoint para generar el usuario
     [HttpPost("register")]
-    public IActionResult Register([FromForm] string tipoDoc,[FromForm] int valorDoc)
+    public IActionResult Register([FromForm] string tipoDoc, [FromForm] string valorDoc, [FromForm] string password)
     {
         // Aca se va a usar la api de willin para saber si los documentos son validos
 
-        var user = new User(null);
-        return Ok(new { message = $"Este es tu ID: '{user.id}'" });
+        var regUser = new User(["1", "2"],tipoDoc, valorDoc, ["kkk"] );
+        return Ok(new { message = $"Este es tu ID: '{regUser.User_Id}' '{regUser.TypeDocuments}' '{regUser.Documents}' '{regUser.UserBiometric}'" });
     }
 
     // Endpoint para poner al usario los vectores 
