@@ -1,20 +1,32 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AccessScreen from './Screens/AccessScreen';
+import SuccessScreen from './Screens/SuccessScreen';
+import DeniedScreen from './Screens/DeniedScreen';
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Access">
+        <Stack.Screen
+          name="Access"
+          component={AccessScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="SuccessScreen"
+          component={SuccessScreen}
+          options={{ title: 'Acceso concedido' }}
+        />
+        <Stack.Screen
+          name="DeniedScreen"
+          component={DeniedScreen}
+          options={{ title: 'Acceso denegado' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

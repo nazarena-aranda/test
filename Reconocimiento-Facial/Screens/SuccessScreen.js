@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function DeniedScreen() {
+export default function SuccessScreen({ route }) {
+  const { user } = route.params || {};
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Acceso denegado</Text>
-      <Text style={styles.subtext}>Por favor, intentá nuevamente.</Text>
+      <Text style={styles.text}>Acceso concedido</Text>
+      {user && <Text style={styles.userText}>Bienvenida/o, {user}</Text>}
     </View>
   );
 }
@@ -13,17 +15,17 @@ export default function DeniedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2dede',
+    backgroundColor: '#dff0d8',
     alignItems: 'center',
     justifyContent: 'center',
   },
   text: {
     fontSize: 24,
-    color: '#a94442',
+    color: '#3c763d',
     marginBottom: 10,
   },
-  subtext: {
-    fontSize: 16,
-    color: '#a94442',
+  userText: {
+    fontSize: 18,
+    color: '#3c763d',
   },
 });
