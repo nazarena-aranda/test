@@ -7,7 +7,7 @@
   <PackageReference Include="DlibDotNet" Version="19.21.0.20220724" />
   <PackageReference Include="OpenCvSharp4" Version="4.11.0.20250507" />
   <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.11.0.20250507" />
-  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.9.0" />
+  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.11.0" />
   <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
   </ItemGroup>
 </Project>

@@ -2,19 +2,27 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using APIt.Models;
+using System;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserController : ControllerBase
-{       
+public class zonamericaController : ControllerBase
+{
     // Endpoint para generar el usuario
     [HttpPost("register")]
-    public IActionResult Register([FromForm] string tipoDoc, [FromForm] string valorDoc, [FromForm] string password)
-    {
+    public IActionResult Register([FromForm] string[] UserId, [FromForm] string tipoDoc, [FromForm] string valorDoc, [FromForm] string password)
+    {//depende de donde este la api de zonameria es si se queda aca ide o se queda contraseña
+
         // Aca se va a usar la api de willin para saber si los documentos son validos
 
-        var regUser = new User(["1", "2"],tipoDoc, valorDoc, ["kkk"] );
-        return Ok(new { message = $"Este es tu ID: '{regUser.User_Id}' '{regUser.TypeDocuments}' '{regUser.Documents}' '{regUser.UserBiometric}'" });
+        var regUser = new User(UserId, tipoDoc, valorDoc);
+        return Ok(new
+        {
+            UserIds = regUser.User_Id,
+            TipoDoc = regUser.TypeDocuments,
+            Documento = regUser.Documents
+        });
+
     }
 
     // Endpoint para poner al usario los vectores 
@@ -22,7 +30,7 @@ public class UserController : ControllerBase
     public IActionResult Biometric([FromForm] IFormFile image)
     {
 
-        
+
         return Ok(new { message = "User registered successfully." });
     }
 

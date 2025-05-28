@@ -18,7 +18,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false; // esto linea abra que cambiarla 
+    options.RequireHttpsMetadata = false; // esto linea abra que cambiarla cuando sea https
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -37,3 +37,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+
