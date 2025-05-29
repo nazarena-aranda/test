@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
+
 
 var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtSettings:SecretKey"]);
 builder.Services.AddAuthentication(options =>
@@ -30,7 +33,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
 builder.Services.AddControllers();
+builder.Services.AddScoped<TokenService>();
+
 var app = builder.Build();
 
 app.UseAuthentication();

@@ -1,6 +1,7 @@
-using System;
+using System.Security.Claims;
+
 public interface ITokenService
 {
-    string GenerateToken(Guid userId);
+    string GenerateToken(string typeDocuments, string documents, bool isAdmin);
+    ClaimsPrincipal GetClaimsFromToken(string token);
 }
-// asasa

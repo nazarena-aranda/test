@@ -8,6 +8,16 @@ using System;
 [ApiController]
 public class zonamericaController : ControllerBase
 {
+    private readonly TokenService _tokenService;
+
+    public zonamericaController(TokenService tokenService)
+    {
+        _tokenService = tokenService;
+    }
+
+
+
+
     // Endpoint para generar el usuario
     [HttpPost("register")]
     public IActionResult Register([FromForm] string[] UserId, [FromForm] string tipoDoc, [FromForm] string valorDoc, [FromForm] string password)
@@ -16,8 +26,10 @@ public class zonamericaController : ControllerBase
         // Aca se va a usar la api de willin para saber si los documentos son validos
 
         var regUser = new User(UserId, tipoDoc, valorDoc);
+        var token = _tokenService.GenerateToken(tipoDoc, valorDoc, isAdmin: false);
         return Ok(new
         {
+            Token = token,
             UserIds = regUser.User_Id,
             TipoDoc = regUser.TypeDocuments,
             Documento = regUser.Documents
@@ -42,4 +54,11 @@ public class zonamericaController : ControllerBase
         return Ok(new { message = "Access granted." });
     }
 
+
+    [HttpPost("admin")]
+    public IActionResult Admin([FromBody] User loginUser)
+    {
+
+        return Ok(new { message = "Access granted." });
+    }
 }
