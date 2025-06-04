@@ -38,7 +38,7 @@ public class zonamericaController : ControllerBase
     }
 
     // Endpoint para poner al usario los vectores 
-    [HttpPost("biometric/{id}")]
+    [HttpPost("biometric")]
     public IActionResult Biometric([FromForm] IFormFile image)
     {
 
@@ -48,17 +48,40 @@ public class zonamericaController : ControllerBase
 
     // Endpoint para validar el acceso de un usuario ( y vector facial)
     [HttpPost("login")]
-    public IActionResult Login([FromBody] User loginUser)
+    public IActionResult Login([FromForm] IFormFile image)
     {
-
-        return Ok(new { message = "Access granted." });
+        if (image != null && image.Length > 0)
+        {
+            return Ok(new { message = "Access granted." });
+        }
+        else
+        {
+            return Unauthorized(new { message = "Access denied. No image provided." });
+        }
     }
 
 
     [HttpPost("admin")]
-    public IActionResult Admin([FromBody] User loginUser)
+    public IActionResult Admin()
     {
 
         return Ok(new { message = "Access granted." });
     }
+
+    [HttpPost("apizona")]
+    public IActionResult Apizona([FromForm] string tipoDoc, [FromForm] string valorDoc, [FromForm] string password)
+    {//depende de donde este la api de zonameria es si se queda aca ide o se queda contraseña
+
+        // Aca se va a usar la api de willin para saber si los documentos son validos
+
+        var regUser = new User(["2376", "9472"], tipoDoc, valorDoc);
+
+        return Ok(new
+        {
+            UserIds = regUser.User_Id,
+
+        });
+
+    }
+
 }
