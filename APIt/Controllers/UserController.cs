@@ -1,7 +1,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
-using APIt.Models;
+using APIt.Resources.Models;
+using APIt.Resources.DTO;
 using System;
 
 [Route("api/[controller]")]
@@ -20,13 +21,11 @@ public class zonamericaController : ControllerBase
 
     // Endpoint para generar el usuario
     [HttpPost("register")]
-    public IActionResult Register([FromForm] string[] UserId, [FromForm] string tipoDoc, [FromForm] string valorDoc, [FromForm] string password)
-    {//depende de donde este la api de zonameria es si se queda aca ide o se queda contraseña
+    public IActionResult Register([FromBody] RegisterDto request)
+    {
+        var regUser = new User(new[] { "2376", "9472" }, request.TipoDoc, request.ValorDoc);
+        var token = _tokenService.GenerateToken(request.TipoDoc, request.ValorDoc, isAdmin: false);
 
-        // Aca se va a usar la api de willin para saber si los documentos son validos
-
-        var regUser = new User(UserId, tipoDoc, valorDoc);
-        var token = _tokenService.GenerateToken(tipoDoc, valorDoc, isAdmin: false);
         return Ok(new
         {
             Token = token,
@@ -34,8 +33,8 @@ public class zonamericaController : ControllerBase
             TipoDoc = regUser.TypeDocuments,
             Documento = regUser.Documents
         });
-
     }
+
 
     // Endpoint para poner al usario los vectores 
     [HttpPost("biometric")]
@@ -66,22 +65,6 @@ public class zonamericaController : ControllerBase
     {
 
         return Ok(new { message = "Access granted." });
-    }
-
-    [HttpPost("apizona")]
-    public IActionResult Apizona([FromForm] string tipoDoc, [FromForm] string valorDoc, [FromForm] string password)
-    {//depende de donde este la api de zonameria es si se queda aca ide o se queda contraseña
-
-        // Aca se va a usar la api de willin para saber si los documentos son validos
-
-        var regUser = new User(["2376", "9472"], tipoDoc, valorDoc);
-
-        return Ok(new
-        {
-            UserIds = regUser.User_Id,
-
-        });
-
     }
 
 }

@@ -1,11 +1,11 @@
 #nullable enable
 using System;
 
-namespace APIt.Models
+namespace APIt.Resources.Models
 {
     public class User
     {
-        public string[] User_Id { get; set; }
+        public string[]? User_Id { get; set; }
         public string TypeDocuments { get; set; }
         public string Documents { get; set; }
         public string[]? UserBiometric { get; set; }
@@ -13,7 +13,7 @@ namespace APIt.Models
         public int FailedAttempts { get; set; }
         public int SuccessfulAttempts { get; set; }
 
-        public User(string[]? userId, string? typeDocuments, string? documents, string[]? userBiometric = null)
+        public User(string[]? userId, string typeDocuments, string documents, string[]? userBiometric = null)
         {
             User_Id = userId;
             TypeDocuments = typeDocuments;
