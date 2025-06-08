@@ -61,7 +61,7 @@ public class zonamericaController : ControllerBase
 
 
     [HttpPost("admin")]
-    public IActionResult Admin()
+    public IActionResult Admin([FromBody] AdminDto request)
     {
 
         return Ok(new { message = "Access granted." });

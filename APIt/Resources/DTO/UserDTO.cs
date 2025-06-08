@@ -6,4 +6,10 @@ namespace APIt.Resources.DTO
         public string ValorDoc { get; set; }
         public string Password { get; set; }
     }
+
+        public class AdminDto
+    {
+        public string DoorId { get; set; }
+
+    }
 }
