@@ -5,6 +5,8 @@ using APIt.Resources.Models;
 using APIt.Resources.DTO;
 using System;
 using APIt.Services;
+using Microsoft.AspNetCore.Authorization;
+
 
 [Route("api/[controller]")]
 [ApiController]
@@ -37,7 +39,7 @@ public class zonamericaController : ControllerBase
     }
 
 
-    // Endpoint para poner al usario los vectores 
+    [Authorize]
     [HttpPost("biometric")]
     public IActionResult Biometric([FromForm] BiometricDto request)
     {
@@ -47,6 +49,7 @@ public class zonamericaController : ControllerBase
     }
 
     // Endpoint para validar el acceso de un usuario ( y vector facial)
+
     [HttpPost("login")]
     public IActionResult Login([FromForm] LoginDto request)
     {
