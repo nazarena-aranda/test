@@ -1,3 +1,6 @@
+using System.Drawing;
+using Microsoft.AspNetCore.Http;
+
 namespace APIt.Resources.DTO
 {
     public class RegisterDto
@@ -7,9 +10,23 @@ namespace APIt.Resources.DTO
         public string Password { get; set; }
     }
 
-        public class AdminDto
+    public class AdminDto
     {
         public string DoorId { get; set; }
 
     }
+    
+    
+
+public class BiometricDto
+{
+    public IFormFile Image { get; set; }
 }
+
+public class LoginDto
+{
+    public IFormFile Image { get; set; }
+}
+
+}
+

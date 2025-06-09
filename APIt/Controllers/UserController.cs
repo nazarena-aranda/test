@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using APIt.Resources.Models;
 using APIt.Resources.DTO;
 using System;
+using APIt.Services;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -38,7 +39,7 @@ public class zonamericaController : ControllerBase
 
     // Endpoint para poner al usario los vectores 
     [HttpPost("biometric")]
-    public IActionResult Biometric([FromForm] IFormFile image)
+    public IActionResult Biometric([FromForm] BiometricDto request)
     {
 
 
@@ -47,9 +48,9 @@ public class zonamericaController : ControllerBase
 
     // Endpoint para validar el acceso de un usuario ( y vector facial)
     [HttpPost("login")]
-    public IActionResult Login([FromForm] IFormFile image)
+    public IActionResult Login([FromForm] LoginDto request)
     {
-        if (image != null && image.Length > 0)
+        if (request.Image != null && request.Image.Length > 0)
         {
             return Ok(new { message = "Access granted." });
         }

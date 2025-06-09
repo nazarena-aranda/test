@@ -3,33 +3,38 @@
 // los usarios tambien se crearan y guardaran aca 
 using System;
 using System.Threading.Tasks;
+using System.Net.Http;
 
-public class UserService : IUserService
+namespace APIt.Services
 {
-    private readonly IAccessAgent _accessAgent;
-
-    public UserService(IAccessAgent accessAgent)
+    public class UserService : IUserService
     {
-        _accessAgent = accessAgent;
+        private readonly IAccessAgent _accessAgent;
+
+        public UserService(IAccessAgent accessAgent)
+        {
+            _accessAgent = accessAgent;
+        }
+
+        public async Task CreateUser(string tipoDoc, string valorDoc, string password)
+        {
+            try
+            {
+                var resultado = await _accessAgent.GenerateAccessAsync(tipoDoc, valorDoc, password);
+                Console.WriteLine("funciona");
+                Console.WriteLine("Respuesta del agente: " + resultado);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine("Error del agente:");
+                Console.WriteLine(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error inesperado:");
+                Console.WriteLine(ex.Message);
+            }
+        }
     }
 
-    public async Task CreateUser(string tipoDoc, string valorDoc, string password)
-    {
-        try
-        {
-            var resultado = await _accessAgent.GenerateAccessAsync(tipoDoc, valorDoc, password);
-            Console.WriteLine("funciona");
-            Console.WriteLine("Respuesta del agente: " + resultado);
-        }
-        catch (HttpRequestException ex)
-        {
-            Console.WriteLine("Error del agente:");
-            Console.WriteLine(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error inesperado:");
-            Console.WriteLine(ex.Message);
-        }
-    }
 }
