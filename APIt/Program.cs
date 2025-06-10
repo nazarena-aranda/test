@@ -74,8 +74,10 @@ builder.Services.AddSwaggerGen(c =>
     c.OperationFilter<FileUploadOperationFilter>();
 
 });
+builder.Services.AddHttpClient<IAccessAgent, InternalAccessAgent>();
 
 
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
@@ -84,7 +86,6 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "V1");
 });
-
 
 app.UseAuthentication();
 app.UseAuthorization();

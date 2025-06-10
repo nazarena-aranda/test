@@ -12,34 +12,52 @@ using Microsoft.AspNetCore.Authorization;
 [ApiController]
 public class zonamericaController : ControllerBase
 {
+    
     private readonly TokenService _tokenService;
 
-    public zonamericaController(TokenService tokenService)
+    private readonly IUserService _userService;
+
+    public zonamericaController(TokenService tokenService, IUserService userService)
     {
         _tokenService = tokenService;
+        _userService = userService;
     }
-
-
-
 
     // Endpoint para generar el usuario
     [HttpPost("register")]
-    public IActionResult Register([FromBody] RegisterDto request)
+    public async Task<IActionResult> Register([FromBody] RegisterDto request)
     {
-        var regUser = new User(new[] { "2376", "9472" }, request.TipoDoc, request.ValorDoc);
-        var token = _tokenService.GenerateToken(request.TipoDoc, request.ValorDoc, isAdmin: false);
-
-        return Ok(new
+        if (!ModelState.IsValid)
         {
-            Token = token,
-            UserIds = regUser.User_Id,
-            TipoDoc = regUser.TypeDocuments,
-            Documento = regUser.Documents
-        });
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var createdUser = await _userService.CreateUserAsync(request.TipoDoc, request.ValorDoc, request.Password);
+
+            var token = _tokenService.GenerateToken(createdUser.TypeDocuments, createdUser.Documents, isAdmin: false);
+
+            return Ok(new
+            {
+                Token = token,
+                UserIds = createdUser.User_Id,
+                TipoDoc = createdUser.TypeDocuments,
+                Documento = createdUser.Documents
+            });
+        }
+        catch (ApplicationException ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An unexpected error occurred in Register: {ex.Message}");
+            return StatusCode(500, new { message = "An unexpected error occurred during registration." });
+        }
     }
 
 
-    [Authorize]
     [HttpPost("biometric")]
     public IActionResult Biometric([FromForm] BiometricDto request)
     {
@@ -53,7 +71,7 @@ public class zonamericaController : ControllerBase
     [HttpPost("login")]
     public IActionResult Login([FromForm] LoginDto request)
     {
-        if (request.Image != null && request.Image.Length > 0)
+        if (request.ImageFile != null && request.ImageFile.Length > 0)
         {
             return Ok(new { message = "Access granted." });
         }

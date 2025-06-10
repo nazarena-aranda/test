@@ -12,19 +12,19 @@ public class InternalAccessAgent : IAccessAgent
     public InternalAccessAgent(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("http://201.217.142.42:16003/api/");
+        _httpClient.BaseAddress = new Uri("http://zonago-test.zonamerica.com/");
     }
 
-    public async Task<string> GenerateAccessAsync(string tipoDoc, string valorDoc, string password)
+    public async Task<string> GenerateAccessAsync(string tipoDoc, string valorDoc, string pass)
     {
         var payload = new
         {
-            TipoDoc = tipoDoc,
-            ValorDoc = valorDoc,
-            Password = password
+            documentType = tipoDoc,
+            documentNumber = valorDoc,
+            password = pass
         };
 
-        var response = await _httpClient.PostAsJsonAsync("access/generateaccess", payload);
+        var response = await _httpClient.PostAsJsonAsync("api/auth", payload);
 
         if (!response.IsSuccessStatusCode)
         {

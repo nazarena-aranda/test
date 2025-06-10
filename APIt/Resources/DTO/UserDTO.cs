@@ -1,32 +1,37 @@
-using System.Drawing;
+#nullable enable
+
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
 namespace APIt.Resources.DTO
 {
     public class RegisterDto
     {
-        public string TipoDoc { get; set; }
-        public string ValorDoc { get; set; }
-        public string Password { get; set; }
+        [Required(ErrorMessage = "The document type is required.")]
+        public string? TipoDoc { get; set; }
+
+        [Required(ErrorMessage = "The document number is required.")]
+        public string? ValorDoc { get; set; }
+
+        [Required(ErrorMessage = "The password is required.")]
+        public string? Password { get; set; }
     }
 
     public class AdminDto
     {
-        public string DoorId { get; set; }
-
+        [Required(ErrorMessage = "The door ID is required.")]
+        public required string DoorId { get; set; }
     }
-    
-    
 
-public class BiometricDto
-{
-    public IFormFile Image { get; set; }
+    public class BiometricDto
+    {
+        [Required(ErrorMessage = "The image file is required.")]
+        public IFormFile? ImageFile { get; set; }
+    }
+
+    public class LoginDto
+    {
+        [Required(ErrorMessage = "The image file is required.")]
+        public IFormFile? ImageFile { get; set; }
+    }
 }
-
-public class LoginDto
-{
-    public IFormFile Image { get; set; }
-}
-
-}
-
