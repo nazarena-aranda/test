@@ -45,8 +45,6 @@ if (string.IsNullOrEmpty(mongoDbConnectionString))
 }
 
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoDbConnectionString));
-
-// Register your database and collection (adjust "YourDatabaseName" and "Users" as needed)
 builder.Services.AddSingleton(sp =>
 {
     var client = sp.GetRequiredService<IMongoClient>();
