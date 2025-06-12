@@ -8,7 +8,7 @@ const RegisterScreen = () => {
     const [open, setOpen] = useState(false);
     const [selectedDocumentType, setSelectedDocumentType] = useState('cedula');
     const [items, setItems] = useState([
-        { label: 'Cédula Uruguaya', value: 'cedula' },
+        { label: 'Cédula Uruguaya', value: 'C' },
         { label: 'Pasaporte', value: 'pasaporte' },
         { label: 'Credencial', value: 'credencial' },
         { label: 'DNI (Argentino)', value: 'dni argentino' },
@@ -26,21 +26,23 @@ const RegisterScreen = () => {
                 return;
             }
         try {
-            const response = await fetch('http://192.168.1.100:5000/zonamerica/api/register', {
+            const response = await fetch('http://172.21.231.236:5000/api/zonamerica/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    documentType: selectedDocumentType,
-                    document,
+                    tipoDoc: selectedDocumentType,
+                    valorDoc: document,
                     password,
                 }),
             });
 
             if (response.ok) {
+                const data = await response.json();
                 Alert.alert('Registro exitoso', 'Tus datos se han enviado correctamente.');
             } else {
+                const errorData = await response.json();
                 Alert.alert('Error', 'Hubo un problema al enviar tus datos.');
             }
         } catch (error) {
