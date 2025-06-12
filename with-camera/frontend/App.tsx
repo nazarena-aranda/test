@@ -52,7 +52,7 @@ export default function App() {
         // Crea un objeto FormData para enviar la imagen como un archivo
         const formData = new FormData();
      
-        formData.append('Image', {
+        formData.append('ImageFile', {
           uri: fileUriToSend,
           name: `camera_photo_${Date.now()}${fileNameExtension}`,
           type: fileMimeType, // tipo MIME de la imagen (JPEG o PNG)
