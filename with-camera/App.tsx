@@ -5,8 +5,9 @@ import {
   useCameraPermissions,
 } from "expo-camera";
 import { useRef, useState, useEffect } from "react";
-import { Button, Pressable, StyleSheet, Text, View } from "react-native";
+import { Button, Pressable, StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 
 export default function App() {
@@ -14,21 +15,23 @@ export default function App() {
   const ref = useRef<CameraView>(null);
   const [uri, setUri] = useState<string | null>(null);
   const [facing, _] = useState<CameraType>("front");
+  const [accessGranted, setAccessGranted] = useState<boolean | null>(null);
+  const [accessStatus, setAccessStatus] = useState<"capturing" | "granted" | "denied">("capturing");
 
    const takePicture = async () => {
     const photo = await ref.current?.takePictureAsync();
     setUri(photo?.uri);
-  };
 
-   useEffect(() => {
-    if (permission?.granted) {
-      const timer = setInterval(() => {
-        takePicture();
-      }, 1000);
+    const resultado = Math.random() < 0.5;
+    setAccessGranted(resultado);
+   };
+  
+  useEffect(() => {
+    if (!permission) return;
+    if (!permission.granted) requestPermission();
 
-      return () => clearTimeout(timer);
-    }
   }, [permission?.granted]);
+  
 
   if (!permission) {
     return null;
@@ -57,21 +60,42 @@ export default function App() {
     );
   };
 
-  const renderCamera = () => {
-    return (
-      <CameraView
-        style={styles.camera}
-        ref={ref}
-        facing={facing}
-        mute={false}
-        animateShutter={false}
-        responsiveOrientationWhenOrientationLocked
-      >
-        <View style={styles.shutterContainer}>
+const renderCamera = () => {
+  return (
+    <CameraView
+      style={styles.camera}
+      ref={ref}
+      facing={facing}
+      mute={false}
+      animateShutter={false}
+      responsiveOrientationWhenOrientationLocked
+    >
+      <View style={styles.overlay}>
+        <View style={styles.ovalFrame} />
+        {accessGranted !== null && (
+        <View style={styles.statusContainer}>
+          <Text
+            style={[
+              styles.statusText,
+              { color: accessGranted ? "green" : "red" },
+            ]}
+          >
+            {accessGranted ? "Success" : "Denied"}
+          </Text>
         </View>
-      </CameraView>
-    );
-  };
+        )}
+      </View>
+      <View style={styles.shutterContainer}>
+        <Pressable onPress={takePicture} style={styles.shutterBtn}>
+          {/* <Text style={styles.shutterBtnText}>Tomar</Text> */}
+          <Ionicons name="camera" size={50} color="black" />
+        </Pressable>
+      </View>
+    </CameraView>
+
+  );
+};
+
 
   return (
     <View style={styles.container}>
@@ -90,30 +114,70 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
     width: "100%",
+    position: "relative",
   },
   shutterContainer: {
     position: "absolute",
     bottom: 44,
     left: 0,
+    right: 0,
     width: "100%",
     alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     paddingHorizontal: 30,
   },
   shutterBtn: {
-    backgroundColor: "transparent",
+    backgroundColor: "white",
     borderWidth: 5,
-    borderColor: "white",
+    borderColor: "black",
     width: 85,
     height: 85,
     borderRadius: 45,
     alignItems: "center",
     justifyContent: "center",
   },
-  shutterBtnInner: {
-    width: 70,
-    height: 70,
-    borderRadius: 50,
+  shutterBtnText: {
+  color: "black",
+  fontSize: 15,
+  fontWeight: "bold",
   },
+  frame: {
+  position: "absolute",
+  top: "30%",
+  left: "15%",
+  width: "70%",
+  height: "40%",
+  borderWidth: 8,
+  borderColor: "white",
+  borderRadius: 20,
+},
+
+statusContainer: {
+  position: "absolute",
+  bottom: 130,
+  alignSelf: "center",
+  backgroundColor: "rgba(0,0,0,0.5)",
+  paddingHorizontal: 20,
+  paddingVertical: 10,
+  borderRadius: 30,
+},
+
+statusText: {
+  fontSize: 30,
+  fontWeight: "bold",
+},
+overlay: {
+  ...StyleSheet.absoluteFillObject,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+ovalFrame: {
+  width: 300,
+  height: 450,
+  borderRadius: 200,
+  borderWidth: 5,
+  borderColor: "white",
+  backgroundColor: "transparent",
+},
 });
