@@ -8,6 +8,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using APIt.Services;
 using MongoDB.Driver;
 using APIt.Resources.Models;
+using Microsoft.AspNetCore.Hosting;
 
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
