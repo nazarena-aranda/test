@@ -8,7 +8,7 @@ using APIt.Services;
 using Microsoft.AspNetCore.Authorization;
 
 
-[Route("api/[controller]")]
+[Route("api/zonamerica")]
 [ApiController]
 public class zonamericaController : ControllerBase
 {

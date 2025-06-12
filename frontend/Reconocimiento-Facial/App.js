@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import WelcomeScreen from './Screens/WelcomeScreen';
 import RegisterScreen from './Screens/RegisterScreen';
 
-const BACKEND_URL = 'http://192.168.1.100:5000/zonamerica/api/login';
+const BACKEND_URL = 'http://localhost:5001/api/zonamerica/register';
 
 const fetchData = async () => {
     const response = await fetch(BACKEND_URL, {
