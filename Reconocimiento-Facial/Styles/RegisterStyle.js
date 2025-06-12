@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
         paddingLeft: 20,
     },
     button: { // Estilo del boton de "ingresar"
-        backgroundColor: '#35b557',
+        backgroundColor: '#1fC16B',
         height: 40,
         borderRadius: 17,
         paddingVertical: 10,

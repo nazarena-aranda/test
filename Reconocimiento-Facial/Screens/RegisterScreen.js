@@ -1,6 +1,5 @@
 import React, { useState } from 'react'; 
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity} from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import styles from '../Styles/RegisterStyle';
@@ -17,7 +16,37 @@ const RegisterScreen = () => {
         { label: 'Otro', value: 'otro' },
     ]);
 
+    const [document, setDocument] = useState('');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+
+    const handleRegister = async () => {
+            if (!document || !password) {
+                Alert.alert('Error', 'Completa todos los campos.');
+                return;
+            }
+        try {
+            const response = await fetch('http://192.168.1.100:5000/zonamerica/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    documentType: selectedDocumentType,
+                    document,
+                    password,
+                }),
+            });
+
+            if (response.ok) {
+                Alert.alert('Registro exitoso', 'Tus datos se han enviado correctamente.');
+            } else {
+                Alert.alert('Error', 'Hubo un problema al enviar tus datos.');
+            }
+        } catch (error) {
+            Alert.alert('Error', 'No se pudo conectar con el servidor.');
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -35,13 +64,20 @@ const RegisterScreen = () => {
                 textStyle={styles.dropdownText}
                 placeholder="Seleccione un tipo de documento"
             />
-            <TextInput style={styles.input} placeholder="Documento" />
+            <TextInput
+                style={styles.input}
+                placeholder="Documento"
+                value={document}
+                onChangeText={setDocument}
+            />
             <Text style={styles.label}>Contraseña</Text>
             <View style={styles.inputContainer}>
                 <TextInput
                     style={styles.inputWithIcon}
                     placeholder="Contraseña"
                     secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
                 />
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                     <Icon
@@ -50,11 +86,11 @@ const RegisterScreen = () => {
                     />
                 </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.button} onPress={() => {}}>
+            <TouchableOpacity style={styles.button} onPress={handleRegister}>
                 <Text style={styles.buttonText}>Ingresar</Text>
             </TouchableOpacity>
         </View>
     );
 };
 
-export default RegisterScreen;
+export default RegisterScreen
