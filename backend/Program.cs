@@ -99,6 +99,8 @@ builder.Services.AddHttpClient<IAccessAgent, InternalAccessAgent>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 
+MongoConventions.RegisterConventions();
+
 var app = builder.Build();
 
 app.UseSwagger();
