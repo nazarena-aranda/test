@@ -6,11 +6,15 @@ using Microsoft.Extensions.Configuration;
 using Swashbuckle.AspNetCore.Filters;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using APIt.Services;
+using MongoDB.Driver;
+using APIt.Resources.Models;
+using Microsoft.AspNetCore.Hosting;
 
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +38,22 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
+
+var mongoDbConnectionString = builder.Configuration.GetConnectionString("MongoDB");
+if (string.IsNullOrEmpty(mongoDbConnectionString))
+{
+    throw new InvalidOperationException("MongoDB connection string is not configured in appsettings.json or environment variables.");
+}
+
+builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoDbConnectionString));
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    var database = client.GetDatabase("DoorSystemDatabase");
+    return database.GetCollection<User>("Users");
+});
+
+
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<TokenService>();
