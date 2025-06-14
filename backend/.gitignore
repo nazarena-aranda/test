@@ -1,0 +1,7 @@
+# .gitignore
+bin/
+obj/
+*.dll
+*.so
+*.dylib
+node_modules/
