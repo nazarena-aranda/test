@@ -9,23 +9,23 @@ import { Image } from "expo-image";
 import * as FileSystem from 'expo-file-system';
 
 export default function App() {
-  // permisos de la cámara
+  // camera permissions
   const [permission, requestPermission] = useCameraPermissions();
   const ref = useRef<CameraView>(null);
   const [uri, setUri] = useState<string | null>(null);
-  // cámara (frontal por defecto)
+  // camera (front by default)
   const [facing, _] = useState<CameraType>("front");
 
   const [isProcessingOrUploading, setIsProcessingOrUploading] = useState(false);
 
-  // Intervalo de tiempo para tomar fotos cada 2 segundos
+  // Interval to take photos every 2 seconds
   const CAPTURE_INTERVAL_MS = 2000;
 
-  const BACKEND_PROCESS_URL = 'http://localhost:5001/api/zonamerica/login'; 
+  const BACKEND_PROCESS_URL = 'http://localhost:5001/api/zonamerica/login';
 
-  // capturar la foto y enviarla al backend
+  // capture the photo and send it to the backend
   const captureAndSendToBackend = async () => {
-    // evita que siga tomando fotos si ya estamos procesando o si ya hay una foto mostrándose
+    // prevent taking more photos if already processing or if a photo is being displayed
     if (isProcessingOrUploading || uri) {
       return;
     }
@@ -33,84 +33,81 @@ export default function App() {
     setIsProcessingOrUploading(true);
 
     try {
-      // `takePictureAsync` devuelve un objeto `photo` que contiene la `uri8
+      // `takePictureAsync` returns a `photo` object containing the `uri`
       const photo = await ref.current?.takePictureAsync({
         quality: 0.9,
       });
 
       // si se tomó la foto y tenemos su URI local
       if (photo?.uri) {
-        console.log("Foto tomada, enviando como archivo al backend...");
-        console.log("Tu foto tiene la siguiente URI:", photo.uri);
+        console.log("Photo taken, sending as a file to the backend...");
+        console.log("Your photo has the following URI:", photo.uri);
 
-
-        const fileUriToSend = photo.uri; // Usamos directamente la URI de la foto capturada
+        const fileUriToSend = photo.uri; // Use the URI of the captured photo
         const fileNameExtension = '.jpg';
         const fileMimeType = 'image/jpeg';
 
-
-        // Crea un objeto FormData para enviar la imagen como un archivo
+        // Create a FormData object to send the image as a file
         const formData = new FormData();
-     
+
         formData.append('ImageFile', {
           uri: fileUriToSend,
           name: `camera_photo_${Date.now()}${fileNameExtension}`,
           type: fileMimeType, // tipo MIME de la imagen (JPEG o PNG)
-        } as any); // 'as any' es necesario para el tipado de TypeScript
+        } as any); // 'as any' is necessary for TypeScript typing
 
+        console.log("Sending FormData to the backend...");
 
-        console.log("Enviando FormData al backend...");
-
-        // realiza la solicitud HTTP POST al backend
+        // Make the HTTP POST request to the backend
         const response = await fetch(BACKEND_PROCESS_URL, {
           method: 'POST',
           headers: {
           },
-          body: formData, // envía el objeto FormData
+          body: formData, // Send the FormData object
         });
 
         if (response.ok) {
           const responseData = await response.json();
-          console.log("Respuesta del backend:", responseData);
+          console.log("Backend response:", responseData);
 
-          // Verifica si el backend detectó una cara (según la propiedad 'faceDetected')
+          // Check if the backend detected a face (based on the 'faceDetected' property)
           if (responseData.faceDetected) {
-            console.log("¡Cara detectada por el backend! Mostrando foto.");
-            setUri(photo.uri); // Muestra la foto local si se detectó una cara
-            Alert.alert("Éxito", "Cara detectada y procesada por el servidor.");
-            // Si tu backend devuelve más datos (ej. vectores faciales), puedes usarlos aquí
-            // console.log("Vectores de cara:", responseData.faceVectors);
+            console.log("Face detected by the backend! Showing photo.");
+            setUri(photo.uri); // Show the local photo if a face was detected
+            Alert.alert("Success", "Face detected and processed by the server.");
+            // If your backend returns more data (e.g. facial vectors), you can use them here
+            // console.log("Facial vectors:", responseData.faceVectors);
           } else {
-            console.log("No se detectó ninguna cara por el backend. Descartando foto.");
-            // Si no se detecta una cara, no mostramos la foto y la cámara seguirá buscando.
+            console.log("No face detected by the backend. Discarding photo.");
+            // If no face is detected, we don't show the photo and the camera keeps searching.
           }
         } else {
-          // Si la respuesta no fue exitosa, lee el mensaje de error del backend
+          // If the response was not successful, read the error message from the backend
           const errorText = await response.text();
-          console.error("Error del backend al procesar la foto:", response.status, errorText);
-          Alert.alert("Error del Servidor", `No se pudo procesar la foto en el servidor. Código: ${response.status}. Mensaje: ${errorText}`);
+          console.error("Backend error processing photo:", response.status, errorText);
+          Alert.alert("Server Error", `Could not process photo on server. Code: ${response.status}. Message: ${errorText}`);
         }
       } else {
-        console.warn("No se pudo obtener la URI de la foto. ¿La cámara está lista?");
+        console.warn("Could not obtain photo URI. Is the camera ready?");
       }
     } catch (error) {
-      // Captura y maneja cualquier error durante la captura o el envío de la foto
-      console.error("Error al capturar o enviar la foto:", error);
-      Alert.alert("Error de Conexión", "No se pudo conectar con el servidor o hubo un error al procesar la foto.");
+      // Capture and handle any errors during photo capture or sending
+      console.error("Error capturing or sending photo:", error);
+      Alert.alert("Connection Error", "Could not connect to server or there was an error processing the photo.");
     } finally {
-      // Siempre resetea el estado de procesamiento al finalizar (éxito o error)
+      // Always reset processing state when finished (success or error)
       setIsProcessingOrUploading(false);
     }
   };
 
-  // Efecto que se ejecuta para iniciar el temporizador de captura automática
+  // Effect that runs to start the automatic capture timer
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    // El temporizador solo se inicia si tenemos permiso, no hay una foto mostrándose
-    // y no estamos ya procesando/subiendo una imagen.
+    // The timer only starts if we have permission, no photo is being displayed
+    // and we are not already processing/uploading an image.
     if (permission?.granted && !uri && !isProcessingOrUploading) {
       timer = setInterval(() => {
-        captureAndSendToBackend(); // Llama a la función de captura y envío
+        captureAndSendToBackend(); // Call the capture and send function
       }, CAPTURE_INTERVAL_MS);
     }
 
@@ -119,21 +116,21 @@ export default function App() {
         clearInterval(timer);
       }
     };
-  }, [permission?.granted, uri, isProcessingOrUploading]); // Dependencias del useEffect
+  }, [permission?.granted, uri, isProcessingOrUploading]); // UseEffect dependencies
 
-  // Renderiza null o un indicador de carga mientras se obtienen los permisos
+  // Render null or a loading indicator while permissions are being obtained
   if (!permission) {
     return null;
   }
 
-  // Si los permisos no están concedidos, pide al usuario que los conceda
+  // If permissions are not granted, prompt the user to grant them
   if (!permission.granted) {
     return (
       <View style={styles.container}>
         <Text style={{ textAlign: "center", color: 'white' }}>
-          Necesitamos tu permiso para usar la cámara.
+          We need your permission to use the camera.
         </Text>
-        <Button onPress={requestPermission} title="Conceder permiso" />
+        <Button onPress={requestPermission} title="Grant Permission" />
       </View>
     );
   }
@@ -144,11 +141,11 @@ export default function App() {
       <View style={styles.pictureContainer}>
         <Image
           source={{ uri }}
-          contentFit="contain" // Ajusta la imagen dentro de los límites
+          contentFit="contain" // Adjust the image within the bounds
           style={{ width: 300, aspectRatio: 1 }}
         />
-        {/* Botón para volver a la cámara */}
-        <Button onPress={() => setUri(null)} title="Tomar otra foto" />
+        {/* Button to return to the camera */}
+        <Button onPress={() => setUri(null)} title="Take another photo" />
       </View>
     );
   };
@@ -157,7 +154,7 @@ export default function App() {
   const renderCamera = () => {
     return (
       <CameraView
-        style={styles.camera} // Estilos para que la cámara ocupe todo el espacio disponible
+        style={styles.camera} // Styles to make the camera take up all available space
         ref={ref} 
         facing={facing} 
         mute={false} 
@@ -166,17 +163,17 @@ export default function App() {
       >
         <View style={styles.shutterContainer}>
           {isProcessingOrUploading ? (
-            // Indicador de carga cuando se está enviando/procesando la foto
+            // Loading indicator when sending/processing the photo
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: 10, borderRadius: 5 }}>
               <ActivityIndicator size="small" color="#00ff00" />
               <Text style={{ color: 'white', marginLeft: 10 }}>
-                Enviando a servidor...
+                Sending to server...
               </Text>
             </View>
           ) : (
-            // Mensaje cuando la cámara está esperando detección
+            // Message when the camera is waiting for detection
             <Text style={{ color: 'white', fontSize: 16, backgroundColor: 'rgba(0,0,0,0.5)', padding: 10, borderRadius: 5 }}>
-                Esperando detección...
+                Waiting for detection...
             </Text>
           )}
         </View>
@@ -184,7 +181,7 @@ export default function App() {
     );
   };
 
-  // Renderizado condicional: muestra la foto si hay una URI, si no, muestra la cámara
+  // Conditional rendering: show the photo if there is a URI, otherwise show the camera
   return (
     <View style={styles.container}>
       {uri ? renderPicture() : renderCamera()}
@@ -192,13 +189,13 @@ export default function App() {
   );
 }
 
-// Estilos de la aplicación
+// Application styles
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Ocupa todo el espacio disponible
-    backgroundColor: "#000", // Fondo negro
-    alignItems: "center", // Centra los elementos horizontalmente
-    justifyContent: "center", // Centra los elementos verticalmente
+    flex: 1, // Occupies all available space
+    backgroundColor: "#000", // Black background
+    alignItems: "center", // Centers elements horizontally
+    justifyContent: "center", // Centers elements vertically
   },
   pictureContainer: {
     flex: 1,
@@ -208,16 +205,16 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
-    width: "100%", // La cámara ocupa todo el ancho
+    width: "100%", // The camera takes up the full width
   },
   shutterContainer: {
-    position: "absolute", // Posicionamiento absoluto sobre la cámara
-    bottom: 44, // 44 unidades desde abajo
+    position: "absolute", // Absolute positioning over the camera
+    bottom: 44, // 44 units from the bottom
     left: 0,
-    width: "100%", // Ocupa todo el ancho
-    alignItems: "center", // Centra horizontalmente el contenido
+    width: "100%", // Occupies the full width
+    alignItems: "center", // Centers content horizontally
     flexDirection: "row",
-    justifyContent: "center", // Centrar el mensaje de estado
-    paddingHorizontal: 30, // Relleno horizontal
+    justifyContent: "center", // Center the status message
+    paddingHorizontal: 30, // Horizontal padding
   },
 });
