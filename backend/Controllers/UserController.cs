@@ -118,7 +118,7 @@ public class zonamericaController : ControllerBase
         catch (Exception ex)
         {
             // Captura cualquier otra excepción inesperada
-            Console.WriteLine($"Error inesperado al registrar biométricos: {ex.Message}");
+            Console.WriteLine($"Unexpected error when registering biometrics: {ex.Message}");
             return StatusCode(500, new { message = $"Error : {ex.Message}" });
         }
 
