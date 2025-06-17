@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Picker } from 'react-native';
-
+import { View, Text, Picker } from 'react-native';
+import styles from '../Styles/AdminStyle';
 const AdminScreen = () => {
     const [selectedDoor, setSelectedDoor] = useState('');
 
@@ -19,28 +19,5 @@ const AdminScreen = () => {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: '#fff',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    label: {
-        fontSize: 16,
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    dropdown: {
-        height: 50,
-        width: '100%',
-    },
-});
 
 export default AdminScreen;

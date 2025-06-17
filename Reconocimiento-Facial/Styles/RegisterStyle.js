@@ -14,6 +14,7 @@ const styles = StyleSheet.create({
         marginBottom: 90,
         marginTop: -250,
         textAlign: 'center',
+        fontFamily: 'PoppinsRegular',
     },
     dropdown: { // Estilo del dropdown
         height: 45,
@@ -32,6 +33,7 @@ const styles = StyleSheet.create({
         textAlign: 'left',
         paddingHorizontal: 10,
         fontWeight: 'normal',
+        fontFamily: 'PoppinsRegular',
     },
     dropdownContainer: { // Estilo del contenedor del dropdown
         borderColor: 'lightgray',
@@ -47,6 +49,7 @@ const styles = StyleSheet.create({
         fontWeight: '',
         marginBottom: -5,
         marginTop: 8,
+        fontFamily: 'PoppinsRegular',
     },
     input: { // Input de texto (cuadros de "documento" y "contraseña")
         height: 45,
@@ -59,6 +62,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white', 
         fontSize: 13,
         color: 'gray',
+        fontFamily: 'PoppinsRegular',
     },
     inputContainer: { // Contenedor del input de contraseña y el icono
         flexDirection: 'row',
@@ -103,6 +107,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '',
         paddingHorizontal: 10,
+        fontFamily: 'PoppinsRegular',
     },
 });
 
