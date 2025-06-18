@@ -64,13 +64,13 @@ namespace APIt.Services
             {
                 Console.WriteLine("Error del agente:");
                 Console.WriteLine(ex.Message);
-                throw new ApplicationException("Error creating user: connection problem with external agent.", ex);
+                throw new ApplicationException("Error creating user: error comuincation with API", ex);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error inesperado:");
                 Console.WriteLine(ex.Message);
-                throw new ApplicationException("An unexpected error occurred while trying to create the user.", ex);
+                throw new ApplicationException($"An unexpected error occurred while trying to create the user:{ex.Message}", ex);
             }
 
         }
@@ -99,13 +99,20 @@ namespace APIt.Services
                 var filter = Builders<User>.Filter.Eq(u => u.TypeDocuments, user.TypeDocuments) &
                              Builders<User>.Filter.Eq(u => u.Documents, user.Documents);
 
-                var result = await _usersCollection.ReplaceOneAsync(filter, user);
+                var update = Builders<User>.Update
+
+                    .Set(u => u.User_Id, user.User_Id)
+                    .Set(u => u.UserBiometric, user.UserBiometric);
+
+                var result = await _usersCollection.UpdateOneAsync(filter, update);
 
                 return result.IsAcknowledged && result.ModifiedCount > 0;
+
+
             }
             catch (Exception ex)
             {
-   
+
                 Console.WriteLine(ex.ToString());
                 throw new ApplicationException("update fail.", ex);
             }

@@ -39,7 +39,7 @@ public class zonamericaController : ControllerBase
             var createdUser = await _userService.CreateUserAsync(request.TipoDoc, request.ValorDoc, request.Password);
             //aca se podra crear otro catch cuando se intente crear us usuario duplicado
             var token = _tokenService.GenerateToken(createdUser.TypeDocuments, createdUser.Documents, isAdmin: false);
-            return Ok(new
+            return StatusCode(201, new
             {
                 Token = token,
                 UserIds = createdUser.User_Id,
@@ -50,7 +50,7 @@ public class zonamericaController : ControllerBase
         catch (Exception ex)
         {
             Console.WriteLine($"An error inregistation: {ex.Message}");
-            return StatusCode(500, new { message = "An error occurred during registration." });
+            return StatusCode(500, new { message = ex.Message });
         }
     }
 

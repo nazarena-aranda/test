@@ -1,5 +1,6 @@
-public interface IBiometricEncryptionService
+public interface IBiometricService
 {
-    string GenerateToken(string typeDocuments, string documents, bool isAdmin);
+    float ExtractBiometricData();
+    string EncryptBiometricData();
     
 }
