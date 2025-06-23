@@ -6,6 +6,8 @@ using APIt.Resources.Models;
 using System.Text.Json;
 using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace APIt.Services
 {
@@ -50,7 +52,7 @@ namespace APIt.Services
                 if (root.TryGetProperty("personIds", out JsonElement personIdsElement) && personIdsElement.ValueKind == JsonValueKind.String)
                 {
                     extractedPersonId = personIdsElement.GetString();
-                    var regUser = new User(extractedPersonId, tipoDoc, valorDoc);
+                    var regUser = new User(extractedPersonId, tipoDoc, valorDoc, null);
                     await _usersCollection.InsertOneAsync(regUser);
                     return regUser;
                 }
@@ -105,10 +107,43 @@ namespace APIt.Services
             }
             catch (Exception ex)
             {
-   
+
                 Console.WriteLine(ex.ToString());
                 throw new ApplicationException("update fail.", ex);
             }
+        }
+
+        public bool FindUserByFace(float[] faceVector, float threshold = 0.75f)
+        {
+            var pipeline = new[]
+            {
+                new BsonDocument("$vectorSearch", new BsonDocument
+                {
+                    { "index", "user_biometric_index" },
+                    { "queryVector", new BsonArray(faceVector) },
+                    { "path", "user_biometric" },
+                    { "numCandidates", 100 },
+                    { "limit", 5 }
+                }),
+                new BsonDocument("$project", new BsonDocument
+                {
+                    { "user_id", 1 },
+                    { "score", new BsonDocument("$meta", "vectorSearchScore") }
+                })
+            };
+
+            var result = _usersCollection.Aggregate<BsonDocument>(pipeline).ToList();
+
+            foreach (var doc in result)
+            {
+                if (doc.Contains("score") && doc["score"].ToDouble() >= threshold)
+                {
+                    Console.WriteLine($"✅ Match con usuario: {doc["user_id"]} (score: {doc["score"]})");
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 
