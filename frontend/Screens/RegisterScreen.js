@@ -3,10 +3,11 @@ import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import styles from '../Styles/RegisterStyle';
+import TokenManager from '../utils/TokenManager';
 
 const RegisterScreen = () => {
     const [open, setOpen] = useState(false);
-    const [selectedDocumentType, setSelectedDocumentType] = useState('cedula');
+    const [selectedDocumentType, setSelectedDocumentType] = useState('C');
     const [items, setItems] = useState([
         { label: 'Cédula Uruguaya', value: 'C' },
         { label: 'Pasaporte', value: 'P' },
@@ -21,33 +22,54 @@ const RegisterScreen = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     const handleRegister = async () => {
-            if (!document || !password) {
-                Alert.alert('Error', 'Completa todos los campos.');
-                return;
-            }
-        try {
-            const response = await fetch('http://localhost:5001/api/zonamerica/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    TipoDoc: selectedDocumentType,
-                    ValorDoc: document,
-                    Password: password,
-                }),
-
-            });
-
-            if (response.ok) {
-                Alert.alert('Registro exitoso', 'Tus datos se han enviado correctamente.');
-            } else {
-                console.log(response.status);
-             
-            }
-        } catch (error) {
-            Alert.alert('Error', 'No se pudo conectar con el servidor.');
+        if (!document || !password) {
+            Alert.alert('Error', 'Completa todos los campos.');
+            return;
         }
+        try {
+    const response = await fetch('http://172.20.10.11:5001/api/zonamerica/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            TipoDoc: selectedDocumentType,
+            ValorDoc: document,
+            Password: password,
+        }),
+    });
+
+    if (response.ok) {
+        console.log("registro");
+        Alert.alert('Registro exitoso', 'Ahora vamos a registrar tu rostro.');
+        const data = await response.json();
+        const token = data.Token;
+        TokenManager.setToken(token);
+        navigation.navigate("LoginScreen", {
+            mode: "biometric",
+            tipoDoc: selectedDocumentType,
+            valorDoc: document,
+        });
+    } else {
+        let errorMessage = 'Contraseña de ZonaGo innexistente';
+        try {
+            const errorData = await response.json();
+            if (errorData.message === 'An error occurred during registration.') {
+                errorMessage = 'Usuario ya registrado.';
+            } else {
+                console.log("Detalle del error:", errorData);
+            }
+        } catch (parseError) {
+            const errorText = await response.text();
+            console.log("Error sin formato JSON:", errorText);
+        }
+        Alert.alert('Error', errorMessage);
+    }
+} catch (error) {
+    console.log("Error de red:", error);
+    Alert.alert('Error', 'No se pudo conectar con el servidor.');
+}
+
     };
 
     return (
@@ -89,7 +111,7 @@ const RegisterScreen = () => {
                 </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.button} onPress={handleRegister}>
-                <Text style={styles.buttonText}>Ingresar</Text>
+                <Text style={styles.buttonText}>Registrar</Text>
             </TouchableOpacity>
         </View>
     );

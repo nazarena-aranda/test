@@ -44,7 +44,7 @@ public class zonamericaController : ControllerBase
         try
         {
             var createdUser = await _userService.CreateUserAsync(request.TipoDoc, request.ValorDoc, request.Password);
-            //aca se podra crear otro catch cuando se intente crear us usuario duplicado
+            //aca se podra crear otro catch cuando se intente crear un usuario duplicado
             var token = _tokenService.GenerateToken(createdUser.TypeDocuments, createdUser.Documents, isAdmin: false);
             return Ok(new
             {
@@ -57,20 +57,46 @@ public class zonamericaController : ControllerBase
         catch (Exception ex)
         {
             Console.WriteLine($"An error inregistation: {ex.Message}");
-            return StatusCode(500, new { message = "An error occurred during registration." });
+            return StatusCode(500, new { message = $"{ex.Message}" });
         }
     }
-
+    [Authorize]
     [HttpPost("biometric")]
-    public async Task<IActionResult> RegisterFaceAsync([FromForm] IFormFile file, [FromForm] string tipoDoc, [FromForm] string valorDoc)
+    public async Task<IActionResult> RegisterFaceAsync([FromForm] BiometricDto request)
     {
-        if (file == null || file.Length == 0)
+                var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+
+        if (identity == null || !identity.IsAuthenticated)
+        {
+            return Unauthorized("token invalid.");
+        }
+
+
+        var typeDocumentsClaim = identity.FindFirst("TypeDocuments");
+        var documentsClaim = identity.FindFirst("Documents");
+
+        if (typeDocumentsClaim is null)
+        {
+            return BadRequest("The claim do not have 'TypeDocuments'");
+        }
+
+        if (documentsClaim is null)
+        {
+            return BadRequest("The claim do not have 'Documents'");
+        }
+
+        string TypeDocument = typeDocumentsClaim.Value;
+        string valueDocument = documentsClaim.Value;
+
+
+        if (request.file == null || request.file.Length == 0)
             return BadRequest("No file uploaded.");
 
         var detector = FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks();
         var generator = FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator();
 
-        var image = await Image.LoadAsync<Rgb24>(file.OpenReadStream());
+        var image = await Image.LoadAsync<Rgb24>(request.file.OpenReadStream());
         var faces = detector.DetectFaces(image);
 
         if (faces.Count == 0)
@@ -80,7 +106,7 @@ public class zonamericaController : ControllerBase
         generator.AlignFaceUsingLandmarks(image, face.Landmarks!);
         var embedding = generator.GenerateEmbedding(image);
 
-        var user = await _userService.GetUserByDocumentAsync(tipoDoc, valorDoc);
+        var user = await _userService.GetUserByDocumentAsync(TypeDocument, valueDocument);
         if (user == null)
             return NotFound("User not found.");
 
@@ -92,7 +118,6 @@ public class zonamericaController : ControllerBase
 
         return Ok(new { message = "Biometric data saved successfully." });
     }
-
 
 
 

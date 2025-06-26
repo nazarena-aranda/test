@@ -39,7 +39,7 @@ namespace APIt.Services
                 var existingUser = await GetUserByDocumentAsync(tipoDoc, valorDoc);
                 if (existingUser != null)
                 {
-                    throw new InvalidOperationException($"User with document {tipoDoc}: {valorDoc} already exists.");
+                    throw new InvalidOperationException("User already exists.");
                 }
 
                 var resultado = await _accessAgent.GenerateAccessAsync(tipoDoc, valorDoc, password);
@@ -72,7 +72,7 @@ namespace APIt.Services
             {
                 Console.WriteLine("Error inesperado:");
                 Console.WriteLine(ex.Message);
-                throw new ApplicationException("An unexpected error occurred while trying to create the user.", ex);
+                throw new ApplicationException($"{ex.Message}", ex);
             }
 
         }
