@@ -24,7 +24,7 @@ namespace APIt.Resources.DTO
     public class BiometricDto
     {
         [Required(ErrorMessage = "The image file is required.")]
-        public IFormFile ImageFile { get; set; }
+        public IFormFile file { get; set; }
     }
 
     public class LoginDto

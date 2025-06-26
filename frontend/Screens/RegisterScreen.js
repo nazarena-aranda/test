@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import styles from '../Styles/RegisterStyle';
+import TokenManager from '../utils/TokenManager';
 
 const RegisterScreen = () => {
     const [open, setOpen] = useState(false);
@@ -39,7 +40,11 @@ const RegisterScreen = () => {
     });
 
     if (response.ok) {
+        console.log("registro");
         Alert.alert('Registro exitoso', 'Ahora vamos a registrar tu rostro.');
+        const data = await response.json();
+        const token = data.Token;
+        TokenManager.setToken(token);
         navigation.navigate("LoginScreen", {
             mode: "biometric",
             tipoDoc: selectedDocumentType,
@@ -47,10 +52,9 @@ const RegisterScreen = () => {
         });
     } else {
         let errorMessage = 'Contraseña de ZonaGo innexistente';
-        
         try {
             const errorData = await response.json();
-            if (errorData.message === 'Usuario ya registrado') {
+            if (errorData.message === 'An error occurred during registration.') {
                 errorMessage = 'Usuario ya registrado.';
             } else {
                 console.log("Detalle del error:", errorData);

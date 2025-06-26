@@ -10,6 +10,7 @@ import { Image } from "expo-image";
 import * as FileSystem from 'expo-file-system';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Styles from '../Styles/LoginStyle'; // Importa los estilos
+import TokenManager from "../utils/TokenManager";
 
 
 type RootStackParamList = {
@@ -84,13 +85,13 @@ export default function LoginScreen() {
         
         console.log("Enviando FormData al backend...");
 
-        if (mode === "biometric") {
-          formData.append("tipoDoc", tipoDoc || "");
-          formData.append("valorDoc", valorDoc || "");
-        }
+        const token = TokenManager.getToken();
 
         const response = await fetch(BACKEND_PROCESS_URL, {
           method: "POST",
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
           body: formData,
         });
 
