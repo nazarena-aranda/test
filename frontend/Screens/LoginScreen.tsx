@@ -9,6 +9,7 @@ import { Button, StyleSheet, Text, View, ActivityIndicator, Alert } from "react-
 import { Image } from "expo-image";
 import * as FileSystem from 'expo-file-system';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Styles from '../Styles/LoginStyle'; // Importa los estilos
 
 
 type RootStackParamList = {
@@ -117,76 +118,69 @@ export default function LoginScreen() {
   };
   // Efecto que se ejecuta para iniciar el temporizador de captura automática
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+        let timer: any;
+        if (permission?.granted && !uri && !isProcessingOrUploading) {
+            timer = setInterval(() => {
+                captureAndSendToBackend();
+            }, CAPTURE_INTERVAL_MS);
+        }
 
-    if (!uri && !isProcessingOrUploading) {
-      timer = setInterval(() => {
-        captureAndSendToBackend();
-      }, CAPTURE_INTERVAL_MS);
+        return () => {
+            if (timer) {
+                clearInterval(timer);
+            }
+        };
+    }, [permission?.granted, uri, isProcessingOrUploading]);
+
+    if (!permission) {
+        return null;
     }
 
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [uri, isProcessingOrUploading]);
+    if (!permission.granted) {
+        return (
+            <View style={Styles.container}>
+                <Text style={Styles.title}>Necesitamos permisos para usar la cámara.</Text>
+                <Button onPress={requestPermission} title="Conceder permisos" />
+            </View>
+        );
+    }
 
-  const renderPicture = () => (
-    <View style={styles.pictureContainer}>
-      <Image
-        source={uri ? { uri } : undefined}
-        contentFit="contain"
-        style={{ width: 300, aspectRatio: 1 }}
-      />
-      <Button title="Tomar otra foto" onPress={() => setUri(null)} />
-    </View>
-  );
+    const renderPicture = () => (
+        <View style={Styles.pictureContainer}>
+            <Image
+                source={uri ? { uri } : undefined}
+                contentFit="contain"
+                style={Styles.image}
+            />
+            <Button onPress={() => setUri(null)} title="Tomar otra foto" />
+        </View>
+    );
 
-  const renderCamera = () => (
-    <CameraView
-      style={styles.camera}
-      ref={ref}
-      facing="front"
-      mute={false}
-      animateShutter={false}
-    >
-      <View style={styles.shutterContainer}>
-        {isProcessingOrUploading ? (
-          <ActivityIndicator size="small" color="#00ff00" />
-        ) : (
-          <Text style={{ color: "white" }}>Esperando detección...</Text>
-        )}
-      </View>
-    </CameraView>
-  );
+    const renderCamera = () => (
+        <CameraView
+            style={Styles.camera}
+            ref={ref}
+            facing={facing}
+            mute={false}
+            animateShutter={false}
+            responsiveOrientationWhenOrientationLocked
+        >
+            <View style={Styles.shutterContainer}>
+                {isProcessingOrUploading ? (
+                    <View style={Styles.loadingContainer}>
+                        <ActivityIndicator size="small" color="#00ff00" />
+                        <Text style={Styles.loadingText}>Enviando al servidor...</Text>
+                    </View>
+                ) : (
+                    <Text style={Styles.waitingText}>Esperando detección...</Text>
+                )}
+            </View>
+        </CameraView>
+    );
 
-  return <View style={styles.container}>{uri ? renderPicture() : renderCamera()}</View>;
+    return (
+        <View style={Styles.container}>
+            {uri ? renderPicture() : renderCamera()}
+        </View>
+    );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  pictureContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#000",
-  },
-  camera: {
-    flex: 1,
-    width: "100%",
-  },
-  shutterContainer: {
-    position: "absolute",
-    bottom: 44,
-    left: 0,
-    width: "100%",
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "center",
-    paddingHorizontal: 30,
-  },
-});
