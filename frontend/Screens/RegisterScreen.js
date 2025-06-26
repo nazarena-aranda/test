@@ -26,42 +26,46 @@ const RegisterScreen = () => {
             return;
         }
         try {
-            const response = await fetch('http://172.20.10.11:5001/api/zonamerica/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    TipoDoc: selectedDocumentType,
-                    ValorDoc: document,
-                    Password: password,
-                }),
+    const response = await fetch('http://172.20.10.11:5001/api/zonamerica/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            TipoDoc: selectedDocumentType,
+            ValorDoc: document,
+            Password: password,
+        }),
+    });
 
-            });
-
-            if (response.ok) {
-                Alert.alert('Registro exitoso', 'Ahora vamos a registrar tu rostro.');
-                navigation.navigate("LoginScreen", {
-                    mode: "biometric",
-                    tipoDoc: selectedDocumentType,
-                    valorDoc: document,
-                });
+    if (response.ok) {
+        Alert.alert('Registro exitoso', 'Ahora vamos a registrar tu rostro.');
+        navigation.navigate("LoginScreen", {
+            mode: "biometric",
+            tipoDoc: selectedDocumentType,
+            valorDoc: document,
+        });
+    } else {
+        let errorMessage = 'Contraseña de ZonaGo innexistente';
+        
+        try {
+            const errorData = await response.json();
+            if (errorData.message === 'Usuario ya registrado') {
+                errorMessage = 'Usuario ya registrado.';
             } else {
-                const error = await response.text();
-                console.log("Error al registrar:", error);
-                Alert.alert('Error', 'No se pudo registrar al usuario.');
-                const data = await response.json();
-                Alert.alert('Registro exitoso', 'Tus datos se han enviado correctamente.');
-                const errorData = await response.json();
-                if (errorData.message === 'Usuario ya registrado') {
-                    Alert.alert('Error', 'Usuario ya registrado.');
-                } else {
-                    Alert.alert('Error', 'Hubo un problema al enviar tus datos.');
-                }
+                console.log("Detalle del error:", errorData);
             }
-        } catch (error) {
-            Alert.alert('Error', 'No se pudo conectar con el servidor.');
+        } catch (parseError) {
+            const errorText = await response.text();
+            console.log("Error sin formato JSON:", errorText);
         }
+        Alert.alert('Error', errorMessage);
+    }
+} catch (error) {
+    console.log("Error de red:", error);
+    Alert.alert('Error', 'No se pudo conectar con el servidor.');
+}
+
     };
 
     return (
