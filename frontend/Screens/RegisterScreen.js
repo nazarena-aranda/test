@@ -26,7 +26,7 @@ const RegisterScreen = () => {
                 return;
             }
         try {
-            const response = await fetch('http://localhost:5001/api/zonamerica/register', {
+            const response = await fetch('http://172.20.10.11:5001/api/zonamerica/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
