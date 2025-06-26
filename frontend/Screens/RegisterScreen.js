@@ -6,7 +6,7 @@ import styles from '../Styles/RegisterStyle';
 
 const RegisterScreen = () => {
     const [open, setOpen] = useState(false);
-    const [selectedDocumentType, setSelectedDocumentType] = useState('cedula');
+    const [selectedDocumentType, setSelectedDocumentType] = useState('C');
     const [items, setItems] = useState([
         { label: 'Cédula Uruguaya', value: 'C' },
         { label: 'Pasaporte', value: 'P' },
@@ -40,10 +40,16 @@ const RegisterScreen = () => {
             });
 
             if (response.ok) {
-                Alert.alert('Registro exitoso', 'Tus datos se han enviado correctamente.');
+                Alert.alert('Registro exitoso', 'Ahora vamos a registrar tu rostro.');
+                navigation.navigate("LoginScreen", {
+                    mode: "biometric",
+                    tipoDoc: selectedDocumentType,
+                    valorDoc: document,
+                });
             } else {
-                console.log(response.status);
-             
+                const error = await response.text();
+                console.log("Error al registrar:", error);
+                Alert.alert('Error', 'No se pudo registrar al usuario.');
             }
         } catch (error) {
             Alert.alert('Error', 'No se pudo conectar con el servidor.');
@@ -89,7 +95,7 @@ const RegisterScreen = () => {
                 </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.button} onPress={handleRegister}>
-                <Text style={styles.buttonText}>Ingresar</Text>
+                <Text style={styles.buttonText}>Registrar</Text>
             </TouchableOpacity>
         </View>
     );

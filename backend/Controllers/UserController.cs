@@ -44,7 +44,7 @@ public class zonamericaController : ControllerBase
         try
         {
             var createdUser = await _userService.CreateUserAsync(request.TipoDoc, request.ValorDoc, request.Password);
-            //aca se podra crear otro catch cuando se intente crear us usuario duplicado
+            //aca se podra crear otro catch cuando se intente crear un usuario duplicado
             var token = _tokenService.GenerateToken(createdUser.TypeDocuments, createdUser.Documents, isAdmin: false);
             return Ok(new
             {
