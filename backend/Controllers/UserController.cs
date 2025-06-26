@@ -8,6 +8,13 @@ using System;
 using APIt.Services;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using FaceAiSharp;
+using FaceAiSharp.Extensions;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using System.IO;
+using System.Linq;
+
 
 
 [Route("api/zonamerica")]
@@ -54,90 +61,80 @@ public class zonamericaController : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpPost("biometric")]
-    public async Task<IActionResult> RegisterBiometric([FromForm] BiometricDto request)
+    public async Task<IActionResult> RegisterFaceAsync([FromForm] IFormFile file, [FromForm] string tipoDoc, [FromForm] string valorDoc)
     {
-        var identity = HttpContext.User.Identity as ClaimsIdentity;
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
 
+        var detector = FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks();
+        var generator = FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator();
 
-        if (identity == null || !identity.IsAuthenticated)
-        {
-            return Unauthorized("token invalid.");
-        }
+        var image = await Image.LoadAsync<Rgb24>(file.OpenReadStream());
+        var faces = detector.DetectFaces(image);
 
+        if (faces.Count == 0)
+            return BadRequest("No face detected.");
 
-        var typeDocumentsClaim = identity.FindFirst("TypeDocuments");
-        var documentsClaim = identity.FindFirst("Documents");
+        var face = faces.First();
+        generator.AlignFaceUsingLandmarks(image, face.Landmarks!);
+        var embedding = generator.GenerateEmbedding(image);
 
-        if (typeDocumentsClaim is null)
-        {
-            return BadRequest("The claim do not have 'TypeDocuments'");
-        }
+        var user = await _userService.GetUserByDocumentAsync(tipoDoc, valorDoc);
+        if (user == null)
+            return NotFound("User not found.");
 
-        if (documentsClaim is null)
-        {
-            return BadRequest("The claim do not have 'Documents'");
-        }
+        user.UserBiometric = embedding;
+        var updated = await _userService.UpdateUserAsync(user);
 
-        string TypeDocument = typeDocumentsClaim.Value;
-        string valueDocument = documentsClaim.Value;
+        if (!updated)
+            return StatusCode(500, new { message = "Failed to update biometric data." });
 
-        try
-        {
-            User? user = await _userService.GetUserByDocumentAsync(TypeDocument, valueDocument);
-
-            if (user == null)
-            {
-                return NotFound("the user is not found in the database");
-            }
-
-
-
-            // para nazarena :en esta linea es donde se deberian asignar los datos biometricos 
-            //user.UserBiometric = 
-
-
-
-            bool updated = await _userService.UpdateUserAsync(user);
-
-
-            if (updated)
-            {
-                return Ok(new { message = $"the biometric data insert was sucesfull" });
-            }
-            else
-            {
-                return StatusCode(500, new { message = "is a problem saving the biometric data" });
-            }
-        }
-        catch (ApplicationException ex)
-        {
-            return StatusCode(500, new { message = $"Error : {ex.Message}" });
-        }
-        catch (Exception ex)
-        {
-            // Captura cualquier otra excepción inesperada
-            Console.WriteLine($"Unexpected error when registering biometrics: {ex.Message}");
-            return StatusCode(500, new { message = $"Error : {ex.Message}" });
-        }
-
+        return Ok(new { message = "Biometric data saved successfully." });
     }
+
+
+
 
     // Endpoint para validar el acceso de un usuario ( y vector facial)
 
     [HttpPost("login")]
-    public IActionResult Login([FromForm] LoginDto request)
+    public async Task<IActionResult> Login([FromForm] LoginDto request)
     {
-        if (request.ImageFile != null && request.ImageFile.Length > 0)
+        if (request.ImageFile == null || request.ImageFile.Length == 0)
         {
-            return Ok(new { message = "Access granted." });
+            return BadRequest("No image provided.");
         }
+
+
+        // Procesar imagen
+        var detector = FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks();
+        var generator = FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator();
+
+        await using var ms = new MemoryStream();
+        await request.ImageFile.CopyToAsync(ms);
+        ms.Position = 0;
+        using var image = Image.Load<Rgb24>(ms);
+
+        var faces = detector.DetectFaces(image);
+        if (faces.Count == 0)
+            return BadRequest("No face detected in the image.");
+
+        var face = faces.First();
+        generator.AlignFaceUsingLandmarks(image, face.Landmarks!);
+        var faceVectors = generator.GenerateEmbedding(image);
+
+        // Comparar vectores
+
+        var match = _userService.FindUserByFace(faceVectors, 0.75f);
+
+        if (match)
+            // TODO: llamar api que abre puerta :D
+            return Ok(new { message = "Access granted. Face matched." });
         else
-        {
-            return Unauthorized(new { message = "Access denied. No image provided." });
-        }
+            return Unauthorized(new { message = "Access denied. Face does not match." });
     }
+
 
 
     [HttpPost("admin")]
@@ -146,5 +143,4 @@ public class zonamericaController : ControllerBase
 
         return Ok(new { message = "Access granted." });
     }
-
 }
