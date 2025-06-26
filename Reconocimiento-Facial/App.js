@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import WelcomeScreen from './Screens/WelcomeScreen';
 import RegisterScreen from './Screens/RegisterScreen';
 import AdminScreen from './Screens/AdminScreen';
+import LoginScreen from './Screens/LoginScreen';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import * as SplashScreen from 'expo-splash-screen';
 import { Text, View } from 'react-native';
@@ -32,6 +33,7 @@ const App = () => {
                 <Stack.Screen name="Welcome" component={WelcomeScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
                 <Stack.Screen name="Admin" component={AdminScreen} />
+                <Stack.Screen name="Login" component={LoginScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

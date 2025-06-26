@@ -5,11 +5,13 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 20,
         backgroundColor: '#fff',
+        position: 'relative', // Asegúrate de que el contenedor tenga posición relativa
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 20,
+        marginTop: 180,
+        marginBottom: 130,
         textAlign: 'center',
         fontFamily: 'PoppinsRegular',
     },
@@ -20,8 +22,30 @@ const styles = StyleSheet.create({
         fontFamily: 'PoppinsRegular',
     },
     dropdown: {
-        height: 50,
-        width: '100%',
+        height: 45,
+        borderColor: 'lightgray',
+        borderWidth: 1,
+        borderRadius: 15,
+        backgroundColor: 'white',
+        paddingHorizontal: 10,
+        justifyContent: 'center',
+        marginTop: 10,
+        marginBottom: 4,
+    },
+    dropdownContainer: {
+        borderColor: 'lightgray',
+        borderWidth: 1,
+        borderRadius: 15,
+        backgroundColor: 'white',
+        marginTop: 10,
+        zIndex: 100,
+    },
+    dropdownText: {
+        fontSize: 13,
+        color: '#6b6e6c',
+        textAlign: 'left',
+        paddingHorizontal: 10,
+        fontFamily: 'PoppinsRegular',
     },
 });
 

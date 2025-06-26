@@ -21,10 +21,10 @@ const RegisterScreen = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     const handleRegister = async () => {
-            if (!document || !password) {
-                Alert.alert('Error', 'Completa todos los campos.');
-                return;
-            }
+        if (!document || !password) {
+            Alert.alert('Error', 'Completa todos los campos.');
+            return;
+        }
         try {
             const response = await fetch('http://172.21.231.236:5000/api/zonamerica/register', {
                 method: 'POST',
@@ -43,7 +43,11 @@ const RegisterScreen = () => {
                 Alert.alert('Registro exitoso', 'Tus datos se han enviado correctamente.');
             } else {
                 const errorData = await response.json();
-                Alert.alert('Error', 'Hubo un problema al enviar tus datos.');
+                if (errorData.message === 'Usuario ya registrado') {
+                    Alert.alert('Error', 'Usuario ya registrado.');
+                } else {
+                    Alert.alert('Error', 'Hubo un problema al enviar tus datos.');
+                }
             }
         } catch (error) {
             Alert.alert('Error', 'No se pudo conectar con el servidor.');

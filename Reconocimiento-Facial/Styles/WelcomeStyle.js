@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     h1: {
-        fontSize: 25,
+        fontSize: 20,
         fontWeight: 'bold',
         position: 'absolute',
         top: 100,
@@ -19,12 +19,26 @@ const styles = StyleSheet.create({
         color: 'white',
         fontFamily: 'PoppinsBold',
     },
+    subtitle: {
+        fontSize: 14,
+        fontWeight: 'normal',
+        position: 'absolute',
+        top: 140,
+        left: 50,
+        right: 20,
+        color: 'white',
+        fontFamily: 'PoppinsRegular',
+        textAlign: 'left',
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        marginTop: 450,
+    },
     button: {
         backgroundColor: '#35b557',
         paddingVertical: 10,
         paddingHorizontal: 20,
-        paddingBottom: 15,
-        marginTop: 450,
+        marginHorizontal: 10,
         borderRadius: 15,
     },
     buttonText: {
@@ -32,6 +46,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         fontFamily: 'PoppinsRegular',
+    },
+    settingsIcon: {
+        position: 'absolute',
+        top: 100,
+        right: 40,
     },
 });
 
