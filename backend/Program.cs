@@ -27,7 +27,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false; // Cambiar a true cuando sea  HTTPS
+    options.RequireHttpsMetadata = false; // Change to true when HTTPS
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -71,7 +71,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Ingresa el token JWT:"
+        Description = "Enter the JWT token:"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement

@@ -29,7 +29,7 @@ public class InternalAccessAgent : IAccessAgent
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Error: {response.StatusCode}, Detalle: {errorContent}");
+            throw new HttpRequestException($"Error: {response.StatusCode}, Detail: {errorContent}");
         }
 
         return await response.Content.ReadAsStringAsync();

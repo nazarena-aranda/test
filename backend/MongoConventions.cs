@@ -6,8 +6,8 @@ public static class MongoConventions
     {
         var conventionPack = new ConventionPack
         {
-            new CamelCaseElementNameConvention(), // convierte a camelCase
-            new SnakeCaseElementNameConvention()  // convierte a snake_case
+            new CamelCaseElementNameConvention(), // convert to camelCase
+            new SnakeCaseElementNameConvention()  // convert to snake_case
         };
 
         ConventionRegistry.Register("Snake Case", conventionPack, t => true);
