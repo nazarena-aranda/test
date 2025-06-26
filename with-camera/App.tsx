@@ -32,6 +32,11 @@ export default function App() {
 
   }, [permission?.granted]);
   
+  const getBackgroundColor = () => {
+    if (accessGranted === true) return "green";
+    if (accessGranted === false) return "red";
+    return "#ffffff";
+  };
 
   if (!permission) {
     return null;
@@ -47,30 +52,17 @@ export default function App() {
       </View>
     );
   }
-  const renderPicture = () => {
-    return (
-      <View>
-        <Image
-          source={{ uri }}
-          contentFit="contain"
-          style={{ width: 300, aspectRatio: 1 }}
-        />
-        <Button onPress={() => setUri(null)} title="Take another picture" />
-      </View>
-    );
-  };
 
-const renderCamera = () => {
-  return (
-    <CameraView
-      style={styles.camera}
-      ref={ref}
-      facing={facing}
-      mute={false}
-      animateShutter={false}
-      responsiveOrientationWhenOrientationLocked
-    >
-      <View style={styles.overlay}>
+const renderCamera = () => (
+  <CameraView
+    style={styles.camera}
+    ref={ref}
+    facing={facing}
+    mute={false}
+    animateShutter={false}
+    responsiveOrientationWhenOrientationLocked
+  >
+    <View style={styles.overlay}>
         <View style={styles.ovalFrame} />
         {accessGranted !== null && (
         <View style={styles.statusContainer}>
@@ -87,19 +79,60 @@ const renderCamera = () => {
       </View>
       <View style={styles.shutterContainer}>
         <Pressable onPress={takePicture} style={styles.shutterBtn}>
-          {/* <Text style={styles.shutterBtnText}>Tomar</Text> */}
           <Ionicons name="camera" size={50} color="black" />
         </Pressable>
       </View>
-    </CameraView>
-
+      </CameraView>
   );
-};
 
+return (
 
-  return (
-    <View style={styles.container}>
-      {renderCamera()}
+    <View style={[styles.container, { backgroundColor: getBackgroundColor() }]}>
+      <View style={styles.maskBackground} />
+
+      <View style={styles.maskHole}>
+        <CameraView
+          style={styles.cameraInOval}
+          ref={ref}
+          facing={facing}
+          mute={false}
+          animateShutter={false}
+          responsiveOrientationWhenOrientationLocked
+        />
+      </View>
+
+          {/* Estado dinámico */}
+          {accessGranted === null && (
+            <View style={styles.statusContainer}>
+              <Ionicons name="camera" size={30} color="green" />
+              <Text style={styles.statusCapturing}>Capturando...</Text>
+            </View>
+          )}
+
+          {accessGranted === true && (
+            <View style={styles.statusContainer}>
+              <Ionicons name="checkmark-circle" size={50} color="green" />
+              <Text style={[styles.statusText, { color: "green" }]}>
+                Access Success
+              </Text>
+            </View>
+          )}
+
+          {accessGranted === false && (
+            <View style={styles.statusContainer}>
+              <Ionicons name="close-circle" size={50} color="red" />
+              <Text style={[styles.statusText, { color: "red" }]}>
+                Access Denied
+              </Text>
+            </View>
+          )}
+
+        {/* Botón de disparo */}
+      <View style={styles.shutterContainer}>
+        <Pressable onPress={takePicture} style={styles.shutterBtn}>
+          <Ionicons name="camera" size={50} color="black" />
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -107,14 +140,46 @@ const renderCamera = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+  },
+  maskBackground: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+  },
+  maskHole: {
+    width: 300,
+    height: 450,
+    borderRadius: 200,
+    overflow: "hidden",
+    position: "absolute",
+    top: "20%",
+    alignSelf: "center",
+    zIndex: 2,
+    backgroundColor: "black",
+  },
+  cameraInOval: {
+    width: 300,
+    height: 450,
+  },
+  statusContainer: {
+    position: "absolute",
+    bottom: 130,
+    alignSelf: "center",
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 15,
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 3,
   },
-  camera: {
-    flex: 1,
-    width: "100%",
-    position: "relative",
+  statusText: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginTop: 5,
+  },
+  statusCapturing: {
+    fontSize: 20,
+    color: "green",
+    marginTop: 10,
   },
   shutterContainer: {
     position: "absolute",
@@ -124,7 +189,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 30,
+    zIndex: 3,
   },
   shutterBtn: {
     backgroundColor: "white",
@@ -136,48 +201,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  shutterBtnText: {
-  color: "black",
-  fontSize: 15,
-  fontWeight: "bold",
-  },
-  frame: {
-  position: "absolute",
-  top: "30%",
-  left: "15%",
-  width: "70%",
-  height: "40%",
-  borderWidth: 8,
-  borderColor: "white",
-  borderRadius: 20,
-},
-
-statusContainer: {
-  position: "absolute",
-  bottom: 130,
-  alignSelf: "center",
-  backgroundColor: "rgba(0,0,0,0.5)",
-  paddingHorizontal: 20,
-  paddingVertical: 10,
-  borderRadius: 30,
-},
-
-statusText: {
-  fontSize: 30,
-  fontWeight: "bold",
-},
-overlay: {
-  ...StyleSheet.absoluteFillObject,
-  justifyContent: "center",
-  alignItems: "center",
-},
-
-ovalFrame: {
-  width: 300,
-  height: 450,
-  borderRadius: 200,
-  borderWidth: 5,
-  borderColor: "white",
-  backgroundColor: "transparent",
-},
 });
