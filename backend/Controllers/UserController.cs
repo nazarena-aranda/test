@@ -57,7 +57,7 @@ public class zonamericaController : ControllerBase
         catch (Exception ex)
         {
             Console.WriteLine($"An error inregistation: {ex.Message}");
-            return StatusCode(500, new { message = "An error occurred during registration." });
+            return StatusCode(500, new { message = $"{ex.Message}" });
         }
     }
     [Authorize]
