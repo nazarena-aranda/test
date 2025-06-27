@@ -148,14 +148,6 @@ public async Task<IActionResult> Login([FromForm] LoginDto request)
     await request.ImageFile.CopyToAsync(ms);
     ms.Position = 0;
 
-    // Guardar imagen recibida en disco para debug
-    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "imagenes_recibidas");
-    Directory.CreateDirectory(folderPath);
-
-    var fileName = $"imagen_{DateTime.Now:yyyyMMdd_HHmmssfff}.jpg";
-    var fullPath = Path.Combine(folderPath, fileName);
-
-    await System.IO.File.WriteAllBytesAsync(fullPath, ms.ToArray());
 
     // Procesar imagen
     ms.Position = 0;
