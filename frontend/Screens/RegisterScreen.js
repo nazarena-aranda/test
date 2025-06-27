@@ -127,7 +127,7 @@ const RegisterScreen = () => {
             </View>
 
             <TouchableOpacity style={styles.button} onPress={handleRegister}>
-                <Text style={styles.buttonText}>Registrar</Text>
+                <Text style={styles.buttonText}>Registrarme</Text>
             </TouchableOpacity>
         </View>
     );

@@ -1,4 +1,3 @@
-
 using System;
 using System.Threading.Tasks;
 using System.Net.Http;
@@ -8,20 +7,19 @@ using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 
-
 namespace APIt.Services
 {
     public class UserService : IUserService
     {
         private readonly IAccessAgent _accessAgent;
         private readonly IMongoCollection<User> _usersCollection;
+
         public UserService(IAccessAgent accessAgent, IMongoClient mongoClient, IConfiguration configuration)
         {
             _accessAgent = accessAgent;
 
             var databaseName = configuration["MongoDB:DatabaseName"];
             var usersCollectionName = configuration["MongoDB:UsersCollectionName"];
-
 
             if (string.IsNullOrEmpty(databaseName) || string.IsNullOrEmpty(usersCollectionName))
             {
@@ -44,10 +42,9 @@ namespace APIt.Services
 
                 var resultado = await _accessAgent.GenerateAccessAsync(tipoDoc, valorDoc, password);
                 string extractedPersonId = null;
+
                 using JsonDocument doc = JsonDocument.Parse(resultado);
                 JsonElement root = doc.RootElement;
-
-
 
                 if (root.TryGetProperty("personIds", out JsonElement personIdsElement) && personIdsElement.ValueKind == JsonValueKind.String)
                 {
@@ -74,26 +71,24 @@ namespace APIt.Services
                 Console.WriteLine(ex.Message);
                 throw new ApplicationException($"{ex.Message}", ex);
             }
-
         }
+
         public async Task<User> GetUserByDocumentAsync(string tipoDoc, string valorDoc)
         {
             try
             {
-
                 var filter = Builders<User>.Filter.Eq(u => u.TypeDocuments, tipoDoc) &
                              Builders<User>.Filter.Eq(u => u.Documents, valorDoc);
-
 
                 return await _usersCollection.Find(filter).FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
-
                 Console.WriteLine(ex.ToString());
-                throw new ApplicationException("An error occurred serching for the user.", ex);
+                throw new ApplicationException("An error occurred searching for the user.", ex);
             }
         }
+
         public async Task<bool> UpdateUserAsync(User user)
         {
             try
@@ -102,18 +97,16 @@ namespace APIt.Services
                              Builders<User>.Filter.Eq(u => u.Documents, user.Documents);
 
                 var result = await _usersCollection.ReplaceOneAsync(filter, user);
-
                 return result.IsAcknowledged && result.ModifiedCount > 0;
             }
             catch (Exception ex)
             {
-
                 Console.WriteLine(ex.ToString());
-                throw new ApplicationException("update fail.", ex);
+                throw new ApplicationException("Update failed.", ex);
             }
         }
 
-        public bool FindUserByFace(float[] faceVector, float threshold = 0.75f)
+        public bool FindUserByFace(float[] faceVector, float threshold = 0.6f)
         {
             var pipeline = new[]
             {
@@ -134,17 +127,30 @@ namespace APIt.Services
 
             var result = _usersCollection.Aggregate<BsonDocument>(pipeline).ToList();
 
+            if (result.Count == 0)
+            {
+                Console.WriteLine("❌ No se encontró ninguna cara similar.");
+                return false;
+            }
+
+            Console.WriteLine("🕺 Similitud con la Base de Datos: 🕺");
+            bool foundMatch = false;
+
             foreach (var doc in result)
             {
-                if (doc.Contains("score") && doc["score"].ToDouble() >= threshold)
+                var userId = doc.GetValue("user_id", new BsonString("Desconocido")).AsString;
+                var score = doc.GetValue("score", new BsonDouble(0)).ToDouble();
+
+                Console.WriteLine($"-> Usuario: {userId}, Similitud: {score:P2}"); // Score como porcentaje
+
+                if (score >= threshold)
                 {
-                    Console.WriteLine($"✅ Match con usuario: {doc["user_id"]} (score: {doc["score"]})");
-                    return true;
+                    Console.WriteLine($"✅ Match con usuario: {userId} (score: {score:P2})");
+                    foundMatch = true;
                 }
             }
 
-            return false;
+            return foundMatch;
         }
     }
-
 }

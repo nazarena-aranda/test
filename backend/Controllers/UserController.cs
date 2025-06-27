@@ -64,7 +64,7 @@ public class zonamericaController : ControllerBase
     [HttpPost("biometric")]
     public async Task<IActionResult> RegisterFaceAsync([FromForm] BiometricDto request)
     {
-                var identity = HttpContext.User.Identity as ClaimsIdentity;
+        var identity = HttpContext.User.Identity as ClaimsIdentity;
 
 
         if (identity == null || !identity.IsAuthenticated)
@@ -106,6 +106,14 @@ public class zonamericaController : ControllerBase
         generator.AlignFaceUsingLandmarks(image, face.Landmarks!);
         var embedding = generator.GenerateEmbedding(image);
 
+        // Convert image a MemoryStream
+        await using var outputStream = new MemoryStream();
+        await image.SaveAsJpegAsync(outputStream);
+        outputStream.Position = 0;
+
+        // Convert image bytes to base64 string
+        string base64Image = Convert.ToBase64String(outputStream.ToArray());
+
         var user = await _userService.GetUserByDocumentAsync(TypeDocument, valueDocument);
         if (user == null)
             return NotFound("User not found.");
@@ -116,7 +124,11 @@ public class zonamericaController : ControllerBase
         if (!updated)
             return StatusCode(500, new { message = "Failed to update biometric data." });
 
-        return Ok(new { message = "Biometric data saved successfully." });
+        return Ok(new
+        {
+            message = "Biometric data saved successfully.",
+            image = $"data:image/jpeg;base64,{base64Image}"
+        });
     }
 
 
@@ -124,41 +136,50 @@ public class zonamericaController : ControllerBase
     // Endpoint para validar el acceso de un usuario ( y vector facial)
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromForm] LoginDto request)
+public async Task<IActionResult> Login([FromForm] LoginDto request)
+{
+    if (request.ImageFile == null || request.ImageFile.Length == 0)
     {
-        if (request.ImageFile == null || request.ImageFile.Length == 0)
-        {
-            return BadRequest("No image provided.");
-        }
-
-
-        // Procesar imagen
-        var detector = FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks();
-        var generator = FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator();
-
-        await using var ms = new MemoryStream();
-        await request.ImageFile.CopyToAsync(ms);
-        ms.Position = 0;
-        using var image = Image.Load<Rgb24>(ms);
-
-        var faces = detector.DetectFaces(image);
-        if (faces.Count == 0)
-            return BadRequest("No face detected in the image.");
-
-        var face = faces.First();
-        generator.AlignFaceUsingLandmarks(image, face.Landmarks!);
-        var faceVectors = generator.GenerateEmbedding(image);
-
-        // Comparar vectores
-
-        var match = _userService.FindUserByFace(faceVectors, 0.75f);
-
-        if (match)
-            // TODO: llamar api que abre puerta :D
-            return Ok(new { message = "Access granted. Face matched." });
-        else
-            return Unauthorized(new { message = "Access denied. Face does not match." });
+        return BadRequest("No image provided.");
     }
+
+    // Copiar archivo a memoria
+    await using var ms = new MemoryStream();
+    await request.ImageFile.CopyToAsync(ms);
+    ms.Position = 0;
+
+    // Guardar imagen recibida en disco para debug
+    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "imagenes_recibidas");
+    Directory.CreateDirectory(folderPath);
+
+    var fileName = $"imagen_{DateTime.Now:yyyyMMdd_HHmmssfff}.jpg";
+    var fullPath = Path.Combine(folderPath, fileName);
+
+    await System.IO.File.WriteAllBytesAsync(fullPath, ms.ToArray());
+
+    // Procesar imagen
+    ms.Position = 0;
+    using var image = Image.Load<Rgb24>(ms);
+
+    var detector = FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks();
+    var generator = FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator();
+
+    var faces = detector.DetectFaces(image);
+    if (faces.Count == 0)
+        return BadRequest("No face detected in the image.");
+
+    var face = faces.First();
+    generator.AlignFaceUsingLandmarks(image, face.Landmarks!);
+    var faceVectors = generator.GenerateEmbedding(image);
+
+    // Comparar vectores
+    var match = _userService.FindUserByFace(faceVectors, 0.75f);
+
+    if (match)
+        return Ok(new { message = "Access granted. Face matched." });
+    else
+        return Unauthorized(new { message = "Access denied. Face does not match." });
+}
 
 
 
@@ -168,4 +189,5 @@ public class zonamericaController : ControllerBase
 
         return Ok(new { message = "Access granted." });
     }
+
 }

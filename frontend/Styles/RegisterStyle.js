@@ -93,20 +93,22 @@ const styles = StyleSheet.create({
     button: { // Estilo del boton de "ingresar"
         backgroundColor: '#1fC16B',
         height: 40,
+        width:130,
         borderRadius: 17,
         paddingVertical: 10,
         paddingHorizontal: 20,
         alignItems: 'flex-end',
-        marginTop: 150,
+        marginTop: 70,
         marginBottom: -300,
         marginRight: 25,
-        marginLeft: 220,
+        marginLeft: 25,
+        alignSelf: 'center'
     },
     buttonText: { // Estilo del texto del boton de "ingresar"
         color: 'white',
-        fontSize: 14,
+        fontSize: 14.2,
         fontWeight: '',
-        paddingHorizontal: 10,
+        paddingHorizontal: 4,
         fontFamily: 'PoppinsRegular',
     },
 });
