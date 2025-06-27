@@ -106,7 +106,7 @@ namespace APIt.Services
             }
         }
 
-        public bool FindUserByFace(float[] faceVector, float threshold = 0.6f)
+        public bool FindUserByFace(float[] faceVector, float threshold = 0.75f)
         {
             var pipeline = new[]
             {
@@ -149,6 +149,7 @@ namespace APIt.Services
                     foundMatch = true;
                 }
             }
+            
 
             return foundMatch;
         }
