@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import WelcomeScreen from './Screens/WelcomeScreen';
 import RegisterScreen from './Screens/RegisterScreen';
+import AdminLoginScreen from './Screens/AdminLoginScreen';
 import AdminScreen from './Screens/AdminScreen';
 import LoginScreen from './Screens/LoginScreen';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
@@ -32,6 +33,8 @@ const App = () => {
             <Stack.Navigator initialRouteName="Welcome" screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Welcome" component={WelcomeScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
+                <Stack.Screen name="AdminLogin" component={AdminLoginScreen} />
+                <Stack.Screen name="AdminScreen" component={AdminScreen} />
                 <Stack.Screen name="Admin" component={AdminScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />
             </Stack.Navigator>

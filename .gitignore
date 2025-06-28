@@ -38,3 +38,5 @@ yarn-error.*
 
 retratos/
 imagenes_recibidas/
+
+hash.js
