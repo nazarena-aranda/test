@@ -1,0 +1,35 @@
+#nullable enable
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using APIt.Resources.Models;
+using APIt.Resources.DTO;
+using System;
+using APIt.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using System.IO;
+using System.Linq;
+
+[Route("api/zonamerica/door")]
+[ApiController]
+public class ZonamericaDoorController : ControllerBase
+{
+    private readonly TokenService _tokenService;
+    private readonly IDoorService _doorService;
+
+    public ZonamericaDoorController(TokenService tokenService, IDoorService doorService, IUserService userService)
+    {
+        _tokenService = tokenService;
+        _doorService = doorService;
+    }
+
+    [HttpGet("AllDoors")]
+    public async Task<IActionResult> AllDoors()
+    {
+        var doors = await _doorService.GetAllDoorsAsync();
+        return Ok(doors);
+    }
+
+    // aca va a estar el enpoint de abrir puertas
+}
