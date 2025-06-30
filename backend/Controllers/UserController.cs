@@ -174,12 +174,4 @@ public async Task<IActionResult> Login([FromForm] LoginDto request)
 }
 
 
-
-    [HttpPost("admin")]
-    public IActionResult Admin([FromBody] AdminDto request)
-    {
-
-        return Ok(new { message = "Access granted." });
-    }
-
 }
