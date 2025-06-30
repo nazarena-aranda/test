@@ -6,7 +6,11 @@ namespace APIt.Resources.DTO
     public class OpenDto
     {
         [Required(ErrorMessage = "The DoorId  is required.")]
-        public string DoorId{ get; set; }
+        public required string DoorId { get; set; }
+
+        public string? UserId { get; set; } 
 
     }
+    
+    
 }

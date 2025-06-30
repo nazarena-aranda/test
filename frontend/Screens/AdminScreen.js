@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text } from 'react-native';
-import DropDownPicker from 'react-native-dropdown-picker'; // Cambiar la importación
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import DropDownPicker from 'react-native-dropdown-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../Styles/AdminStyle';
-import { useNavigation } from "@react-navigation/native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
+
+
 
 const AdminScreen = () => {
     const navigation = useNavigation();
@@ -14,8 +17,46 @@ const AdminScreen = () => {
         { label: 'Biotec L146 Pta. Principal', value: 'Biotec L146 Pta. Principal' },
     ]);
 
+    useEffect(() => {
+        const saveDoorToStorage = async () => {
+            if (selectedDoor) {
+                try {
+                    await AsyncStorage.setItem('puerta', selectedDoor);
+                } catch (error) {
+                    console.error('Error al guardar en AsyncStorage:', error);
+                }
+            }
+        };
+        saveDoorToStorage();
+    }, [selectedDoor]);
+
+    const sendDoorToBackend = async () => {
+        try {
+            const puerta = await AsyncStorage.getItem('puerta');
+            const body = {
+                doorId: puerta,
+            };
+
+            const response = await fetch('http://172.20.10.11:5001/api/zonamerica/door/open', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+
+            if (response.ok) {
+                console.log('Puerta enviada correctamente');
+            } else {
+                const errorText = await response.text();
+                console.error('Error al enviar la puerta:', errorText);
+}
+
+        } catch (error) {
+            console.error('Error de red o AsyncStorage:', error);
+        }
+    };
+
     return (
-        
+        <>
         <View style={styles.container}>
             <Text style={styles.title}>Administrador</Text>
             <Text style={styles.label}>Seleccione su puerta</Text>
@@ -31,10 +72,15 @@ const AdminScreen = () => {
                 textStyle={styles.dropdownText}
                 placeholder="¿En qué puerta se encuentra?"
             />
+            <TouchableOpacity style={styles.confirmButton} onPress={sendDoorToBackend}>
+                <Text style={styles.confirmButtonText}>Confirmar</Text>
+            </TouchableOpacity>
         </View>
 
-
-
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={30} color="black" />
+        </TouchableOpacity>
+    </>
     );
 };
 

@@ -31,5 +31,21 @@ public class ZonamericaDoorController : ControllerBase
         return Ok(doors);
     }
 
-    // aca va a estar el enpoint de abrir puertas
+    [HttpPost("open")]
+    public async Task<IActionResult> OpenDoor([FromBody] OpenDto dto)
+    {
+        if (!ModelState.IsValid || string.IsNullOrWhiteSpace(dto.DoorId))
+        {
+            return BadRequest(new { message = "Datos inválidos." });
+        }
+
+        // Como por ahora no sabemos enviar a Lenel, solo imprimos en consola para confirmar si llegó bien
+        Console.WriteLine($"[LENEL SIMULADO] Se intenta abrir la puerta: {dto.DoorId}");
+
+        // Esto es para después guardar en mongo el acceso
+        await _doorService.RegisterSuccessfulAccessAsync(dto.DoorId);
+
+        return Ok(new { message = "Acceso registrado correctamente" });
+    }
+
 }
