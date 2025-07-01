@@ -64,7 +64,8 @@ const RegisterScreen = () => {
                     tipoDoc: selectedDocumentType,
                     valorDoc: document,
                 });
-            } else {
+            } else if (response.status === 409) {
+                Alert.alert('Error', 'Usuario ya registrado.');
                 let errorMessage = 'Contraseña de ZonaGo inexistente';
                 try {
                     const errorData = await response.json();
