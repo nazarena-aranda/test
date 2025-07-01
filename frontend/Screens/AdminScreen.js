@@ -73,14 +73,15 @@ const AdminScreen = () => {
                 textStyle={styles.dropdownText}
                 placeholder="¿En qué puerta se encuentra?"
             />
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                <Ionicons name="arrow-back" size={30} color="black" />
+            </TouchableOpacity>
             <TouchableOpacity style={styles.confirmButton} onPress={sendDoorToBackend}>
                 <Text style={styles.confirmButtonText}>Confirmar</Text>
             </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={30} color="black" />
-        </TouchableOpacity>
+        
     </>
     );
 };

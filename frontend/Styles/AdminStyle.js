@@ -4,6 +4,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
+        paddingTop: 80,
         backgroundColor: '#fff',
         position: 'relative',
     },
@@ -62,6 +63,17 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontFamily: 'PoppinsRegular',
     },
+
+    backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 10,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 5,
+    },
+
 });
 
 export default styles;
