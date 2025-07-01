@@ -32,10 +32,11 @@ const AdminScreen = () => {
 
     const sendDoorToBackend = async () => {
         try {
-            const puerta = await AsyncStorage.getItem('puerta');
             const body = {
-                doorId: puerta,
+                doorId: selectedDoor,
             };
+
+            console.log('Body que se envía:', body);
 
             const response = await fetch('http://172.20.10.11:5001/api/zonamerica/door/open', { 
                 method: 'POST',
