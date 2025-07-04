@@ -31,5 +31,8 @@ namespace APIt.Resources.DTO
     {
         [Required(ErrorMessage = "The image file is required.")]
         public IFormFile ImageFile { get; set; }
+
+        [Required(ErrorMessage = "The doorQR is required.")]
+        public IFormFile doorQR { get; set; }
     }
 }

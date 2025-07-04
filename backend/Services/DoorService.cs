@@ -44,8 +44,7 @@ namespace APIt.Services
             var door = await GetDoorByIdAsync(doorId);
             if (door is null) return;
 
-            door.RegisterFailedAccess(); // aplica lógica de reseteo si pasaron 30 días
-
+            door.RegisterFailedAccess(); 
             var update = Builders<Door>.Update
                 .Set(d => d.SuccessfulAccesses, door.SuccessfulAccesses)
                 .Set(d => d.FailedAccesses, door.FailedAccesses)
@@ -53,5 +52,27 @@ namespace APIt.Services
 
             await _doorCollection.UpdateOneAsync(d => d.DoorId == doorId, update);
         }
+
+        public async Task<string> OpenDoor(string userIdList, string doorQR)
+        {
+            try
+            {
+                int[] personIds = string.IsNullOrWhiteSpace(userIdList)
+                    ? Array.Empty<int>()
+                    : userIdList
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(id => int.Parse(id.Trim()))
+                        .ToArray();
+
+                var response = await _externalAccessAgent.OpenDoorAsync(doorQR, personIds);
+
+                return "The door was opened successfully";
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
     }
 }

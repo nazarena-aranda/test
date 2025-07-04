@@ -9,7 +9,7 @@ namespace APIt.Services
     {
         Task<List<Door>> GetAllDoorsAsync();
         Task<Door?> GetDoorByIdAsync(string doorId);
-
+        
         Task RegisterSuccessfulAccessAsync(string doorId);
         Task RegisterFailedAccessAsync(string doorId);
     }
