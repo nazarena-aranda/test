@@ -165,7 +165,7 @@ public async Task<IActionResult> Login([FromForm] LoginDto request)
     var faceVectors = generator.GenerateEmbedding(image);
 
     // Comparar vectores
-    var match = _userService.FindUserByFace(faceVectors, 0.75f);
+    var match = _userService.FindUserByFace(faceVectors, 0.60f);
 
     if (match)
         return Ok(new { message = "Access granted. Face matched." });
