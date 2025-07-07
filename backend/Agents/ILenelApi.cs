@@ -1,6 +1,9 @@
 using System.Threading.Tasks;
 
-public interface IExternalAccessAgent
+namespace APIt.Agent
 {
-    Task<string> OpenDoorAsync(string qrCode, int[] personIds);
+    public interface IExternalAccessAgent
+    {
+        Task<string> OpenDoorAsync(string qrCode, int[] personIds);
+    }
 }

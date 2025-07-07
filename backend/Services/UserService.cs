@@ -106,7 +106,7 @@ namespace APIt.Services
             }
         }
 
-        public bool FindUserByFace(float[] faceVector, float threshold = 0.75f)
+        public string? FindUserByFace(float[] faceVector, float threshold = 0.75f)
         {
             var pipeline = new[]
             {
@@ -156,8 +156,6 @@ namespace APIt.Services
                 }
             }
 
-
-            
             return bestMatchId;
         }
     }

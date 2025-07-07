@@ -169,12 +169,22 @@ public async Task<IActionResult> Login([FromForm] LoginDto request)
     // Comparar vectores
     var match = _userService.FindUserByFace(faceVectors, 0.75f);
 
-    _doorService.openDoor(request.doorQR, match);
     if (match != null)
-        return Ok(new { message = "Access granted. Face matched." });
-        _doorService.openDoor(request.doorQR, match);
+    {
+        try
+        {
+            _doorService.OpenDoor(request.doorQR, match);
+            return Ok(new { message = "Access granted. Door opened." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(403, new { message = "Access granted, but user is not authorized to open this door." });
+        }
+    }
     else
+    {
         return Unauthorized(new { message = "Access denied. Face does not match." });
+    }
 }
 
 
