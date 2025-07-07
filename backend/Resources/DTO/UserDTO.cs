@@ -15,16 +15,11 @@ namespace APIt.Resources.DTO
         public string Password { get; set; }
     }
 
-    public class AdminDto
-    {
-        [Required(ErrorMessage = "The door ID is required.")]
-        public required string DoorId { get; set; }
-    }
-
     public class BiometricDto
     {
         [Required(ErrorMessage = "The image file is required.")]
         public IFormFile file { get; set; }
+
     }
 
     public class LoginDto
@@ -33,6 +28,6 @@ namespace APIt.Resources.DTO
         public IFormFile ImageFile { get; set; }
 
         [Required(ErrorMessage = "The doorQR is required.")]
-        public IFormFile doorQR { get; set; }
+        public string doorQR { get; set; }
     }
 }

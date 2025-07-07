@@ -12,7 +12,8 @@ namespace APIt.Services
         
         Task RegisterSuccessfulAccessAsync(string doorId);
         Task RegisterFailedAccessAsync(string doorId);
-
         Task<string> OpenDoor(string userIdList, string doorQR);
+
+        
     }
 }
