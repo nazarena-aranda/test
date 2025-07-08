@@ -68,7 +68,7 @@ const RegisterScreen = () => {
                 let errorMessage = 'Contraseña de ZonaGo inexistente';
                 try {
                     const errorData = await response.json();
-                    if (errorData.message === 'An error occurred during registration.') {
+                    if (errorData.message === 'User already exists') {
                         errorMessage = 'Usuario ya registrado.';
                     } else {
                         console.log("Detalle del error:", errorData);

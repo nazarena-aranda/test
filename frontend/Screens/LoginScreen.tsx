@@ -136,6 +136,14 @@ export default function LoginScreen() {
   };
 
   useEffect(() => {
+    Alert.alert(
+      "Por favor, mire directamente a la cámara para continuar.",
+      undefined,
+      [{ text: "Entendido" }]
+    );
+  }, []);
+
+  useEffect(() => {
     let timer: any;
     if (
       permission?.granted &&
