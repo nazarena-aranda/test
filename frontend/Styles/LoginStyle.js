@@ -137,6 +137,11 @@ backButton: {
   borderRadius: 20,
   padding: 5,
 },
-
+flashOverlay: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "white",
+  zIndex: 100,
+  opacity: 0.9,
+},
 });
 
