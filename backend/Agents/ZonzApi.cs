@@ -12,7 +12,7 @@ public class InternalAccessAgent : IAccessAgent
     public InternalAccessAgent(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("http://zonago-test.zonamerica.com/");
+        _httpClient.BaseAddress = new Uri("https://zonago.zonamerica.com/");
     }
 
     public async Task<string> GenerateAccessAsync(string tipoDoc, string valorDoc, string pass)
