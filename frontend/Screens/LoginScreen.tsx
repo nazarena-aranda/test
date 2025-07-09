@@ -48,8 +48,8 @@ export default function LoginScreen() {
 
   const BACKEND_PROCESS_URL =
     mode === "biometric"
-      ? "http://172.20.10.11:5001/api/zonamerica/biometric"
-      : "http://172.20.10.11:5001/api/zonamerica/login";
+      ? "http://192.168.1.4:5001/api/zonamerica/biometric"
+      : "http://192.168.1.4:5001/api/zonamerica/login";
 
   const CAPTURE_INTERVAL_MS = 2000;
 

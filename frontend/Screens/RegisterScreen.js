@@ -31,7 +31,7 @@ const RegisterScreen = () => {
         }
 
         try {
-            const response = await fetch('http://172.20.10.11:5001/api/zonamerica/register', {
+            const response = await fetch('http://192.168.1.4:5001/api/zonamerica/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -65,17 +65,16 @@ const RegisterScreen = () => {
                     valorDoc: document,
                 });
             } else {
-                let errorMessage = 'Contraseña de ZonaGo inexistente';
+                let errorMessage = 'Usuario o contraseña incorrectos';
                 try {
-                    const errorData = await response.json();
-                    if (errorData.message === 'User already exists') {
+                    const text = await response.text();
+                    if (text.includes('User already exists')) {
                         errorMessage = 'Usuario ya registrado.';
                     } else {
-                        console.log("Detalle del error:", errorData);
+                        console.log("Detalle del error:", text);
                     }
                 } catch (parseError) {
-                    const errorText = await response.text();
-                    console.log("Error sin formato JSON:", errorText);
+                    console.log("Error sin formato JSON:", parseError);
                 }
                 Alert.alert('Error', errorMessage);
             }
