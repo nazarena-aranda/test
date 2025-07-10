@@ -12,7 +12,7 @@ const WelcomeScreen = ({ navigation }) => {
             <View style={styles.container}>
                 <TouchableOpacity
                     style={styles.settingsIcon}
-                    onPress={() => navigation.navigate('Admin')}
+                    onPress={() => navigation.navigate('AdminLogin')}
                 >
                     <Icon name="settings-outline" size={30} color="#fff" />
                 </TouchableOpacity>

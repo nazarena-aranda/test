@@ -53,6 +53,14 @@ builder.Services.AddSingleton(sp =>
     return database.GetCollection<User>("Users");
 });
 
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    var database = client.GetDatabase("DoorSystemDatabase");
+    return database.GetCollection<Door>("Doors");  // Colección Doors para Door
+});
+
+
 
 
 builder.Services.AddControllers();
@@ -98,6 +106,7 @@ builder.Services.AddHttpClient<IAccessAgent, InternalAccessAgent>();
 
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDoorService, DoorService>();
 
 MongoConventions.RegisterConventions();
 

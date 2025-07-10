@@ -37,3 +37,6 @@ yarn-error.*
 *.tsbuildinfo
 
 retratos/
+imagenes_recibidas/
+
+hash.js

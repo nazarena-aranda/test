@@ -1,17 +1,22 @@
+// ...imports igual...
 import {
-  CameraType,
-  CameraView, 
+  CameraView,
   useCameraPermissions,
 } from "expo-camera";
 import { useRef, useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  Alert,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
 import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
-import { Button, StyleSheet, Text, View, ActivityIndicator, Alert } from "react-native";
-import { Image } from "expo-image";
-import * as FileSystem from 'expo-file-system';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Styles from '../Styles/LoginStyle'; // Importa los estilos
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import * as ImageManipulator from "expo-image-manipulator";
 import TokenManager from "../utils/TokenManager";
-
+import { styles } from "../Styles/LoginStyle";
 
 type RootStackParamList = {
   LoginScreen: {
@@ -19,95 +24,112 @@ type RootStackParamList = {
     tipoDoc?: string;
     valorDoc?: string;
   };
+  Welcome: undefined;
 };
 
 type LoginScreenRouteProp = RouteProp<RootStackParamList, "LoginScreen">;
-type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "LoginScreen">;
+type LoginScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "LoginScreen"
+>;
 
 export default function LoginScreen() {
-  // permisos de la cámara
   const [permission, requestPermission] = useCameraPermissions();
   const ref = useRef<CameraView>(null);
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const route = useRoute<LoginScreenRouteProp>();
   const { mode = "login", tipoDoc, valorDoc } = route.params || {};
-  const [uri, setUri] = useState<string | null>(null);
-  
-  // cámara (frontal por defecto)
-  const [facing, _] = useState<CameraType>("front");
   const [isProcessingOrUploading, setIsProcessingOrUploading] = useState(false);
+  const [hasFinished, setHasFinished] = useState(false);
+  const [accessGranted, setAccessGranted] = useState<boolean | null>(null);
+  const [deniedAttempts, setDeniedAttempts] = useState(0);
+  const [showManualButton, setShowManualButton] = useState(false);
+  const [flashOverlay, setFlashOverlay] = useState(false);
 
   const BACKEND_PROCESS_URL =
     mode === "biometric"
       ? "http://172.20.10.11:5001/api/zonamerica/biometric"
       : "http://172.20.10.11:5001/api/zonamerica/login";
 
-  // Intervalo de tiempo para tomar fotos cada 2 segundos
   const CAPTURE_INTERVAL_MS = 2000;
 
+  const getBackgroundColor = () => {
+    if (accessGranted === true) return "#BCECD3";
+    if (accessGranted === false) return "#FEBDB1";
+    return "#FAF9F9";
+  };
 
-  // capture the photo and send it to the backend
   const captureAndSendToBackend = async () => {
-    // prevent taking more photos if already processing or if a photo is being displayed
-    if (isProcessingOrUploading || uri) {
-      return;
-    }
+    if (isProcessingOrUploading || hasFinished) return;
 
     setIsProcessingOrUploading(true);
 
     try {
-      // `takePictureAsync` returns a `photo` object containing the `uri`
-      const photo = await ref.current?.takePictureAsync({
-        quality: 0.9,
-      });
+      setFlashOverlay(true);
+      await new Promise(resolve => setTimeout(resolve, 100)); // Simula flash (100 ms)
 
-      // si se tomó la foto y tenemos su URI local
+      const photo = await ref.current?.takePictureAsync({ quality: 0.9 });
+      setFlashOverlay(false);
+
       if (photo?.uri) {
-        
-        console.log("Foto tomada, enviando como archivo al backend...");
-        console.log("Tu foto tiene la siguiente URI:", photo.uri);
+        const manipulatedPhoto = await ImageManipulator.manipulateAsync(
+          photo.uri,
+          [{ flip: ImageManipulator.FlipType.Horizontal }],
+          { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
+        );
 
-        const fileUriToSend = photo.uri; // Use the URI of the captured photo
-        const fileNameExtension = '.jpg';
-        const fileMimeType = 'image/jpeg';
-
-        // Create a FormData object to send the image as a file
         const formData = new FormData();
-        
         formData.append(
           mode === "biometric" ? "file" : "ImageFile",
           {
-            uri: fileUriToSend,
-            name: `camera_photo_${Date.now()}${fileNameExtension}`,
-            type: fileMimeType, // tipo MIME de la imagen (JPEG o PNG)
-          } as any // 'as any' es necesario para el tipado de TypeScript
+            uri: manipulatedPhoto.uri,
+            name: `camera_photo_${Date.now()}.jpg`,
+            type: "image/jpeg",
+          } as any
         );
-        
-        console.log("Enviando FormData al backend...");
 
-        const token = TokenManager.getToken();
+        const token = await TokenManager.getToken();
 
-        const response = await fetch(BACKEND_PROCESS_URL, {
+        await fetch(BACKEND_PROCESS_URL, {
           method: "POST",
           headers: {
-            'Authorization': `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
           body: formData,
         });
 
-        if (response.ok) {
-          const data = await response.json();
-
-          if (mode === "biometric") {
-            Alert.alert("Listo", "Tu rostro fue registrado correctamente.");
-            navigation.navigate("LoginScreen", { mode: "login" });
-          } else {
-            Alert.alert("Acceso concedido", "Tu cara fue reconocida.");
-            setUri(photo.uri);
-          }
+        // Comportamiento según modo
+        if (mode === "biometric") {
+          setAccessGranted(true);
+          setHasFinished(true);
+          setTimeout(() => navigation.navigate("Welcome"), 2000);
         } else {
-          const msg = await response.text();
-          Alert.alert("Error", msg);
+          const response = await fetch(BACKEND_PROCESS_URL, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          });
+
+          if (response.ok) {
+            setAccessGranted(true);
+            setHasFinished(true);
+            setTimeout(() => navigation.navigate("Welcome"), 2000);
+          } else {
+            setAccessGranted(false);
+            setDeniedAttempts((prev) => {
+              const updated = prev + 1;
+              if (updated >= 3) {
+                setShowManualButton(true);
+              }
+              return updated;
+            });
+
+            setTimeout(() => {
+              setAccessGranted(null);
+            }, 2000);
+          }
         }
       }
     } catch (err) {
@@ -117,71 +139,109 @@ export default function LoginScreen() {
       setIsProcessingOrUploading(false);
     }
   };
-  // Efecto que se ejecuta para iniciar el temporizador de captura automática
+
   useEffect(() => {
-        let timer: any;
-        if (permission?.granted && !uri && !isProcessingOrUploading) {
-            timer = setInterval(() => {
-                captureAndSendToBackend();
-            }, CAPTURE_INTERVAL_MS);
-        }
-
-        return () => {
-            if (timer) {
-                clearInterval(timer);
-            }
-        };
-    }, [permission?.granted, uri, isProcessingOrUploading]);
-
-    if (!permission) {
-        return null;
-    }
-
-    if (!permission.granted) {
-        return (
-            <View style={Styles.container}>
-                <Text style={Styles.title}>Necesitamos permisos para usar la cámara.</Text>
-                <Button onPress={requestPermission} title="Conceder permisos" />
-            </View>
-        );
-    }
-
-    const renderPicture = () => (
-        <View style={Styles.pictureContainer}>
-            <Image
-                source={uri ? { uri } : undefined}
-                contentFit="contain"
-                style={Styles.image}
-            />
-            <Button onPress={() => setUri(null)} title="Tomar otra foto" />
-        </View>
+    Alert.alert(
+      "Por favor, mire directamente a la cámara para continuar.",
+      undefined,
+      [{ text: "Entendido" }]
     );
+  }, []);
 
-    const renderCamera = () => (
-        <CameraView
-            style={Styles.camera}
+  useEffect(() => {
+    let timer: any;
+    if (
+      permission?.granted &&
+      !isProcessingOrUploading &&
+      !hasFinished &&
+      !showManualButton
+    ) {
+      timer = setInterval(captureAndSendToBackend, CAPTURE_INTERVAL_MS);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [permission?.granted, isProcessingOrUploading, hasFinished, showManualButton]);
+
+  const handleManualCapture = () => {
+    setShowManualButton(false);
+    setDeniedAttempts(0);
+    captureAndSendToBackend();
+  };
+
+  if (!permission) return null;
+
+  if (!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text>Necesitamos permiso para usar la cámara</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, {
+      backgroundColor: showManualButton
+      ? '#FEBDB1'
+      : getBackgroundColor() }]}>
+
+    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <Ionicons name="arrow-back" size={30} color="black" />
+    </TouchableOpacity>
+
+
+    <View style={styles.maskBackground} />
+      <View style={styles.ovalWrapper}>
+        <View style={styles.maskHole}>
+          <CameraView
+            style={styles.cameraInOval}
             ref={ref}
-            facing={facing}
+            facing="front"
             mute={false}
             animateShutter={false}
             responsiveOrientationWhenOrientationLocked
-        >
-            <View style={Styles.shutterContainer}>
-                {isProcessingOrUploading ? (
-                    <View style={Styles.loadingContainer}>
-                        <ActivityIndicator size="small" color="#00ff00" />
-                        <Text style={Styles.loadingText}>Enviando al servidor...</Text>
-                    </View>
-                ) : (
-                    <Text style={Styles.waitingText}>Esperando detección...</Text>
-                )}
-            </View>
-        </CameraView>
-    );
-
-    return (
-        <View style={Styles.container}>
-            {uri ? renderPicture() : renderCamera()}
+          />
         </View>
-    );
+      </View>
+
+      {isProcessingOrUploading && (
+        <>
+          <ActivityIndicator style={{ marginTop: 40 }} size="large" color="green" />
+          <Text style={styles.capturingText}>Capturando...</Text>
+        </>
+      )}
+
+      {accessGranted === true && (
+        <View style={[styles.statusContainer, styles.grantedBackground]}>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={[styles.statusText, styles.grantedText]}>
+              {mode === "biometric" ? "Escaneo Exitoso" : "Acceso Permitido"}
+            </Text>
+            <Ionicons name="checkmark-circle" size={50} color="#4CCD89" style={{ marginTop: 5 }} />
+          </View>
+        </View>
+      )}
+
+      {accessGranted === false && !showManualButton && (
+        <View style={[styles.statusContainer, styles.deniedBackground]}>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={[styles.statusText, styles.deniedText]}>
+              Acceso denegado
+            </Text>
+            <Ionicons name="close-circle" size={50} color="#FD7A64" style={{ marginTop: 5 }}/>
+          </View>
+        </View>
+      )}
+
+      {showManualButton && (
+        <View style={{ alignItems: 'center' }}>
+        <TouchableOpacity onPress={handleManualCapture} style={styles.manualButton}>
+          <Ionicons name="camera" style={styles.manualIcon} />
+          <Text style={styles.manualText}></Text>
+        </TouchableOpacity>
+        </View>
+      )}
+      {flashOverlay && <View style={styles.flashOverlay} />}
+    </View>
+  );
 }
