@@ -44,7 +44,8 @@ export default function LoginScreen() {
   const [accessGranted, setAccessGranted] = useState<boolean | null>(null);
   const [deniedAttempts, setDeniedAttempts] = useState(0);
   const [showManualButton, setShowManualButton] = useState(false);
-  const [flashOverlay, setFlashOverlay] = useState(false);
+  const [flashOn, setFlashOn] = useState(false);
+
 
   const BACKEND_PROCESS_URL =
     mode === "biometric"
@@ -65,11 +66,7 @@ export default function LoginScreen() {
     setIsProcessingOrUploading(true);
 
     try {
-      setFlashOverlay(true);
-      await new Promise(resolve => setTimeout(resolve, 100)); // Simula flash (100 ms)
-
       const photo = await ref.current?.takePictureAsync({ quality: 0.9 });
-      setFlashOverlay(false);
 
       if (photo?.uri) {
         const manipulatedPhoto = await ImageManipulator.manipulateAsync(
@@ -198,8 +195,13 @@ export default function LoginScreen() {
 
       {isProcessingOrUploading && (
         <>
-          <ActivityIndicator style={{ marginTop: 40 }} size="large" color="green" />
-          <Text style={styles.capturingText}>Capturando...</Text>
+          <View style={styles.capturingRow}>
+            <ActivityIndicator size="large" color="green" />
+            <Text style={styles.capturingText}>Capturando...</Text>
+            <TouchableOpacity onPress={() => setFlashOn(!flashOn)} style={styles.flashButton}>
+              <Ionicons name={flashOn ? "flash" : "flash-off"} size={24} color="black" />
+            </TouchableOpacity>
+          </View>
         </>
       )}
 
@@ -233,7 +235,9 @@ export default function LoginScreen() {
         </TouchableOpacity>
         </View>
       )}
-      {flashOverlay && <View style={styles.flashOverlay} />}
+      {flashOn && (
+        <View style={styles.flashOverlay} pointerEvents="none" />
+      )}
     </View>
   );
 }

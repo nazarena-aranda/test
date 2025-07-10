@@ -140,8 +140,22 @@ backButton: {
 flashOverlay: {
   ...StyleSheet.absoluteFillObject,
   backgroundColor: "white",
-  zIndex: 100,
-  opacity: 0.9,
+  zIndex: 999,
+  opacity: 0.8,
+},
+
+capturingRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 40,
+  gap: 10,
+},
+
+flashButton: {
+  padding: 10,
+  backgroundColor: "#eee",
+  borderRadius: 25,
 },
 });
 
