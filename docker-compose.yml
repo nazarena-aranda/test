@@ -1,1 +1,12 @@
-c
+services:
+  backend:
+    build:
+      context: ./APIt
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8001"
+    environment:
+      - ASPNETCORE_URLS=http://+:8001
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__"mongodb://localhost:27017"
+    network_mode: "host"

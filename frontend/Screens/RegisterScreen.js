@@ -31,7 +31,7 @@ const RegisterScreen = () => {
         }
 
         try {
-            const response = await fetch('http://192.168.1.4:5001/api/zonamerica/register', {
+            const response = await fetch('http://http://mvp-holberton.zonamerica.com:8000/api/zonamerica/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

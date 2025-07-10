@@ -49,8 +49,8 @@ export default function LoginScreen() {
 
   const BACKEND_PROCESS_URL =
     mode === "biometric"
-      ? "http://192.168.1.4:5001/api/zonamerica/biometric"
-      : "http://192.168.1.4:5001/api/zonamerica/login";
+      ? "http://http://mvp-holberton.zonamerica.com:8000/api/zonamerica/biometric"
+      : "http://http://mvp-holberton.zonamerica.com:8000/api/zonamerica/login";
 
   const CAPTURE_INTERVAL_MS = 2000;
 
@@ -137,13 +137,13 @@ export default function LoginScreen() {
     }
   };
 
-  useEffect(() => {
-    Alert.alert(
-      "Por favor, mire directamente a la cámara para continuar.",
-      undefined,
-      [{ text: "Entendido" }]
-    );
-  }, []);
+  //useEffect(() => {
+   // Alert.alert(
+    //  "Por favor, mire directamente a la cámara para continuar.",
+     // undefined,
+     // [{ text: "Entendido" }]
+   // );
+ // }, []);
 
   useEffect(() => {
     let timer: any;

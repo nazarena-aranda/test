@@ -26,8 +26,10 @@ public class zonamericaController : ControllerBase
 
     private readonly IUserService _userService;
 
-    public zonamericaController(TokenService tokenService, IUserService userService)
+    private readonly IDoorService _doorService;
+    public zonamericaController(TokenService tokenService, IUserService userService, IDoorService doorService)
     {
+        _doorService = doorService;
         _tokenService = tokenService;
         _userService = userService;
     }
@@ -167,10 +169,22 @@ public async Task<IActionResult> Login([FromForm] LoginDto request)
     // Comparar vectores
     var match = _userService.FindUserByFace(faceVectors, 0.60f);
 
-    if (match)
-        return Ok(new { message = "Access granted. Face matched." });
+    if (match != null)
+    {
+        try
+        {
+            await _doorService.OpenDoor(request.doorQR, match);
+            return Ok(new { message = "Access granted. Door opened." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(403, new { message = $"{ex} Access granted, but user is not authorized to open this door." });
+        }
+    }
     else
+    {
         return Unauthorized(new { message = "Access denied. Face does not match." });
+    }
 }
 
 

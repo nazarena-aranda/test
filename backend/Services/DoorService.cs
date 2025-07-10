@@ -1,17 +1,21 @@
+using System;
+using System.Linq;
 using APIt.Resources.Models;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using APIt.Agent;
 
 namespace APIt.Services
 {
     public class DoorService : IDoorService
     {
         private readonly IMongoCollection<Door> _doorCollection;
-
-        public DoorService(IMongoCollection<Door> doorCollection)
+        private readonly IExternalAccessAgent _externalAccessAgent;
+        public DoorService(IMongoCollection<Door> doorCollection, IExternalAccessAgent externalAccessAgent)
         {
             _doorCollection = doorCollection;
+            _externalAccessAgent = externalAccessAgent;
         }
 
         public async Task<List<Door>> GetAllDoorsAsync()
@@ -44,8 +48,7 @@ namespace APIt.Services
             var door = await GetDoorByIdAsync(doorId);
             if (door is null) return;
 
-            door.RegisterFailedAccess(); // aplica lógica de reseteo si pasaron 30 días
-
+            door.RegisterFailedAccess(); 
             var update = Builders<Door>.Update
                 .Set(d => d.SuccessfulAccesses, door.SuccessfulAccesses)
                 .Set(d => d.FailedAccesses, door.FailedAccesses)
@@ -53,5 +56,30 @@ namespace APIt.Services
 
             await _doorCollection.UpdateOneAsync(d => d.DoorId == doorId, update);
         }
+
+        public async Task<string> OpenDoor(string userIdList, string doorQR)
+        {
+            try
+            {
+                int[] personIds = string.IsNullOrWhiteSpace(userIdList)
+                    ? Array.Empty<int>()
+                    : userIdList
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(id => int.Parse(id.Trim()))
+                        .ToArray();
+
+                var response = await _externalAccessAgent.OpenDoorAsync(doorQR, personIds);
+
+                return "The door was opened successfully";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error opening door:");
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+
+        }
+
     }
 }
