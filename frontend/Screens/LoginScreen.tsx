@@ -177,7 +177,9 @@ export default function LoginScreen() {
     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
       <Ionicons name="arrow-back" size={30} color="black" />
     </TouchableOpacity>
-
+    <TouchableOpacity style={styles.flashToggleButton} onPress={() => setFlashOn(!flashOn)}>
+      <Ionicons name={flashOn ? "flash" : "flash-off"} size={30} color="black" />
+    </TouchableOpacity>
 
     <View style={styles.maskBackground} />
       <View style={styles.ovalWrapper}>
@@ -195,12 +197,9 @@ export default function LoginScreen() {
 
       {isProcessingOrUploading && (
         <>
-          <View style={styles.capturingRow}>
+          <View style={{ alignItems: 'center' }}>
             <ActivityIndicator size="large" color="green" />
             <Text style={styles.capturingText}>Capturando...</Text>
-            <TouchableOpacity onPress={() => setFlashOn(!flashOn)} style={styles.flashButton}>
-              <Ionicons name={flashOn ? "flash" : "flash-off"} size={24} color="black" />
-            </TouchableOpacity>
           </View>
         </>
       )}

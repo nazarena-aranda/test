@@ -149,13 +149,23 @@ capturingRow: {
   alignItems: "center",
   justifyContent: "center",
   marginTop: 40,
-  gap: 10,
+  gap: 60,
 },
 
 flashButton: {
-  padding: 10,
+  padding: 13,
   backgroundColor: "#eee",
   borderRadius: 25,
 },
+flashToggleButton: {
+  position: "absolute",
+  top: 40,
+  right: 20,
+  padding: 8,
+  backgroundColor: "rgba(255,255,255,0.8)",
+  borderRadius: 25,
+  zIndex: 10,
+},
+
 });
 
