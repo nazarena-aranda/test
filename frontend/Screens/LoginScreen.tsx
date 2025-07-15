@@ -35,6 +35,7 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<
 
 export default function LoginScreen() {
   const [permission, requestPermission] = useCameraPermissions();
+  const [flashOverlay, setFlashOverlay] = useState(false);
   const ref = useRef<CameraView>(null);
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const route = useRoute<LoginScreenRouteProp>();
@@ -44,7 +45,8 @@ export default function LoginScreen() {
   const [accessGranted, setAccessGranted] = useState<boolean | null>(null);
   const [deniedAttempts, setDeniedAttempts] = useState(0);
   const [showManualButton, setShowManualButton] = useState(false);
-  const [flashOverlay, setFlashOverlay] = useState(false);
+  const [flashOn, setFlashOn] = useState(false);
+
 
   const BACKEND_PROCESS_URL =
     mode === "biometric"
@@ -55,7 +57,9 @@ export default function LoginScreen() {
 
   const getBackgroundColor = () => {
     if (accessGranted === true) return "#BCECD3";
-    if (accessGranted === false || showManualButton) return "#FEBDB1";
+    if (accessGranted === false && showManualButton) return "#FEBDB1";
+    if (accessGranted === false) return "#FEBDB1";
+
     return "#FAF9F9";
   };
 
@@ -69,7 +73,6 @@ export default function LoginScreen() {
       await new Promise(resolve => setTimeout(resolve, 100));
 
       const photo = await ref.current?.takePictureAsync({ quality: 0.9 });
-      setFlashOverlay(false);
 
       if (photo?.uri) {
         const manipulatedPhoto = await ImageManipulator.manipulateAsync(
@@ -184,6 +187,9 @@ export default function LoginScreen() {
     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
       <Ionicons name="arrow-back" size={30} color="black" />
     </TouchableOpacity>
+    <TouchableOpacity style={styles.flashToggleButton} onPress={() => setFlashOn(!flashOn)}>
+      <Ionicons name={flashOn ? "flash" : "flash-off"} size={30} color="black" />
+    </TouchableOpacity>
 
     <View style={styles.maskBackground} />
       <View style={styles.ovalWrapper}>
@@ -201,8 +207,10 @@ export default function LoginScreen() {
 
       {isProcessingOrUploading && (
         <>
-          <ActivityIndicator style={{ marginTop: 40 }} size="large" color="green" />
-          <Text style={styles.capturingText}>Capturando...</Text>
+          <View style={{ alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="green" />
+            <Text style={styles.capturingText}>Capturando...</Text>
+          </View>
         </>
       )}
 
@@ -235,8 +243,9 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
       )}
-
-      {flashOverlay && <View style={styles.flashOverlay} />}
+      {flashOn && (
+        <View style={styles.flashOverlay} pointerEvents="none" />
+      )}
     </View>
   );
 }
