@@ -131,13 +131,13 @@ export default function LoginScreen() {
     }
   };
 
-  useEffect(() => {
-    Alert.alert(
-      "Por favor, mire directamente a la cámara para continuar.",
-      undefined,
-      [{ text: "Entendido" }]
-    );
-  }, []);
+  ///useEffect(() => {
+    //Alert.alert(
+     // "Por favor, mire directamente a la cámara para continuar.",
+      ///undefined,
+      ///[{ text: "Entendido" }]
+    //);
+  //}, []);
 
   useEffect(() => {
     if (mode === "biometric") {
