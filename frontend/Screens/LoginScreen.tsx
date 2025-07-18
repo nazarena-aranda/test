@@ -1,4 +1,3 @@
-// ...imports igual...
 import {
   CameraView,
   useCameraPermissions,
@@ -35,6 +34,7 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<
 
 export default function LoginScreen() {
   const [permission, requestPermission] = useCameraPermissions();
+  const [flashOverlay, setFlashOverlay] = useState(false);
   const ref = useRef<CameraView>(null);
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const route = useRoute<LoginScreenRouteProp>();
@@ -49,14 +49,16 @@ export default function LoginScreen() {
 
   const BACKEND_PROCESS_URL =
     mode === "biometric"
-      ? "http://http://mvp-holberton.zonamerica.com:8000/api/zonamerica/biometric"
-      : "http://http://mvp-holberton.zonamerica.com:8000/api/zonamerica/login";
+      ? "http://172.20.10.11:5001/api/zonamerica/biometric"
+      : "http://172.20.10.11:5001/api/zonamerica/login";
 
   const CAPTURE_INTERVAL_MS = 2000;
 
   const getBackgroundColor = () => {
     if (accessGranted === true) return "#BCECD3";
+    if (accessGranted === false && showManualButton) return "#FEBDB1";
     if (accessGranted === false) return "#FEBDB1";
+
     return "#FAF9F9";
   };
 
@@ -66,6 +68,9 @@ export default function LoginScreen() {
     setIsProcessingOrUploading(true);
 
     try {
+      setFlashOverlay(true);
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       const photo = await ref.current?.takePictureAsync({ quality: 0.9 });
 
       if (photo?.uri) {
@@ -87,7 +92,7 @@ export default function LoginScreen() {
 
         const token = await TokenManager.getToken();
 
-        await fetch(BACKEND_PROCESS_URL, {
+        const response = await fetch(BACKEND_PROCESS_URL, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -95,26 +100,14 @@ export default function LoginScreen() {
           body: formData,
         });
 
-        // Comportamiento según modo
-        if (mode === "biometric") {
+        if (response.ok) {
           setAccessGranted(true);
           setHasFinished(true);
           setTimeout(() => navigation.navigate("Welcome"), 2000);
         } else {
-          const response = await fetch(BACKEND_PROCESS_URL, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-          });
+          setAccessGranted(false);
 
-          if (response.ok) {
-            setAccessGranted(true);
-            setHasFinished(true);
-            setTimeout(() => navigation.navigate("Welcome"), 2000);
-          } else {
-            setAccessGranted(false);
+          if (mode === "login") {
             setDeniedAttempts((prev) => {
               const updated = prev + 1;
               if (updated >= 3) {
@@ -122,11 +115,11 @@ export default function LoginScreen() {
               }
               return updated;
             });
-
-            setTimeout(() => {
-              setAccessGranted(null);
-            }, 2000);
           }
+
+          setTimeout(() => {
+            setAccessGranted(null);
+          }, 2000);
         }
       }
     } catch (err) {
@@ -137,17 +130,18 @@ export default function LoginScreen() {
     }
   };
 
-  //useEffect(() => {
-   // Alert.alert(
-    //  "Por favor, mire directamente a la cámara para continuar.",
-     // undefined,
-     // [{ text: "Entendido" }]
-   // );
- // }, []);
+
+  useEffect(() => {
+    if (mode === "biometric") {
+      setShowManualButton(true);
+    }
+  }, [mode]);
 
   useEffect(() => {
     let timer: any;
+
     if (
+      mode === "login" &&
       permission?.granted &&
       !isProcessingOrUploading &&
       !hasFinished &&
@@ -155,10 +149,11 @@ export default function LoginScreen() {
     ) {
       timer = setInterval(captureAndSendToBackend, CAPTURE_INTERVAL_MS);
     }
+
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [permission?.granted, isProcessingOrUploading, hasFinished, showManualButton]);
+  }, [mode, permission?.granted, isProcessingOrUploading, hasFinished, showManualButton]);
 
   const handleManualCapture = () => {
     setShowManualButton(false);
@@ -178,14 +173,15 @@ export default function LoginScreen() {
 
   return (
     <View style={[styles.container, {
-      backgroundColor: showManualButton
-      ? '#FEBDB1'
-      : getBackgroundColor() }]}>
+      backgroundColor: getBackgroundColor()
+    }]}>  
 
     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
       <Ionicons name="arrow-back" size={30} color="black" />
     </TouchableOpacity>
-
+    <TouchableOpacity style={styles.flashToggleButton} onPress={() => setFlashOn(!flashOn)}>
+      <Ionicons name={flashOn ? "flash" : "flash-off"} size={30} color="black" />
+    </TouchableOpacity>
 
     <View style={styles.maskBackground} />
       <View style={styles.ovalWrapper}>
@@ -203,12 +199,9 @@ export default function LoginScreen() {
 
       {isProcessingOrUploading && (
         <>
-          <View style={styles.capturingRow}>
+          <View style={{ alignItems: 'center' }}>
             <ActivityIndicator size="large" color="green" />
             <Text style={styles.capturingText}>Capturando...</Text>
-            <TouchableOpacity onPress={() => setFlashOn(!flashOn)} style={styles.flashButton}>
-              <Ionicons name={flashOn ? "flash" : "flash-off"} size={24} color="black" />
-            </TouchableOpacity>
           </View>
         </>
       )}
@@ -237,10 +230,9 @@ export default function LoginScreen() {
 
       {showManualButton && (
         <View style={{ alignItems: 'center' }}>
-        <TouchableOpacity onPress={handleManualCapture} style={styles.manualButton}>
-          <Ionicons name="camera" style={styles.manualIcon} />
-          <Text style={styles.manualText}></Text>
-        </TouchableOpacity>
+          <TouchableOpacity onPress={handleManualCapture} style={styles.manualButton}>
+            <Ionicons name="camera" style={styles.manualIcon} />
+          </TouchableOpacity>
         </View>
       )}
       {flashOn && (

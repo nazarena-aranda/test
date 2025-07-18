@@ -13,8 +13,12 @@ const AdminScreen = () => {
     const [open, setOpen] = useState(false);
     const [selectedDoor, setSelectedDoor] = useState('');
     const [items, setItems] = useState([
-        { label: 'JCKSV HOLBERTON PB L004C', value: 'JCKSV HOLBERTON PB L004C' },
         { label: 'Biotec L146 Pta. Principal', value: 'Biotec L146 Pta. Principal' },
+        { label: 'JCKSV Holberton Entrada', value: 'JCKSV Holberton Entrada' },
+        { label: 'JCKSV Pta. CECAP', value: 'JCKSV Pta. CECAP' },
+        { label: 'JCKSV Pta. Fundacion ZA', value: 'JCKSV Pta. Fundacion ZA' },
+        { label: 'JCKSV HOLBERTON PB L004C', value: 'JCKSV HOLBERTON PB L004C' },
+
     ]);
 
     useEffect(() => {
@@ -38,7 +42,7 @@ const AdminScreen = () => {
 
             console.log('Body que se envía:', body);
 
-            const response = await fetch('http://mvp-holberton.zonamerica.com:8000/api/zonamerica/door/open', { 
+            const response = await fetch('http://172.20.10.11:5001/api/zonamerica/door/open', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
@@ -46,6 +50,7 @@ const AdminScreen = () => {
 
             if (response.ok) {
                 console.log('Puerta enviada correctamente');
+                navigation.navigate('Welcome'); 
             } else {
                 const errorText = await response.text();
                 console.error('Error al enviar la puerta:', errorText);
