@@ -50,8 +50,8 @@ export default function LoginScreen() {
 
   const BACKEND_PROCESS_URL =
     mode === "biometric"
-      ? "http://172.20.10.11:5001/api/zonamerica/biometric"
-      : "http://172.20.10.11:5001/api/zonamerica/login";
+      ? "http://http://mvp-holberton.zonamerica.com:8000/api/zonamerica/biometric"
+      : "http://http://mvp-holberton.zonamerica.com:8000/api/zonamerica/login";
 
   const CAPTURE_INTERVAL_MS = 2000;
 
@@ -69,9 +69,9 @@ export default function LoginScreen() {
     setIsProcessingOrUploading(true);
 
     try {
+
       setFlashOverlay(true);
       await new Promise(resolve => setTimeout(resolve, 100));
-
       const photo = await ref.current?.takePictureAsync({ quality: 0.9 });
 
       if (photo?.uri) {
@@ -131,19 +131,13 @@ export default function LoginScreen() {
     }
   };
 
-  ///useEffect(() => {
-    //Alert.alert(
-     // "Por favor, mire directamente a la cámara para continuar.",
-      ///undefined,
-      ///[{ text: "Entendido" }]
-    //);
-  //}, []);
 
   useEffect(() => {
     if (mode === "biometric") {
       setShowManualButton(true);
     }
   }, [mode]);
+
 
   useEffect(() => {
     let timer: any;
@@ -207,9 +201,12 @@ export default function LoginScreen() {
 
       {isProcessingOrUploading && (
         <>
-          <View style={{ alignItems: 'center' }}>
+          <View style={styles.capturingRow}>
             <ActivityIndicator size="large" color="green" />
             <Text style={styles.capturingText}>Capturando...</Text>
+            <TouchableOpacity onPress={() => setFlashOn(!flashOn)} style={styles.flashButton}>
+              <Ionicons name={flashOn ? "flash" : "flash-off"} size={24} color="black" />
+            </TouchableOpacity>
           </View>
         </>
       )}

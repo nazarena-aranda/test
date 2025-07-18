@@ -142,6 +142,22 @@ flashOverlay: {
   backgroundColor: "white",
   zIndex: 999,
   opacity: 0.8,
+
+},
+
+capturingRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 40,
+  gap: 10,
+},
+
+flashButton: {
+  padding: 10,
+  backgroundColor: "#eee",
+  borderRadius: 25,
+
 },
 
 capturingRow: {

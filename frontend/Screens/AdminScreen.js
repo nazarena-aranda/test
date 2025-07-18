@@ -42,7 +42,7 @@ const AdminScreen = () => {
 
             console.log('Body que se envía:', body);
 
-            const response = await fetch('http://172.20.10.11:5001/api/zonamerica/door/open', { 
+            const response = await fetch('http://mvp-holberton.zonamerica.com:8000/api/zonamerica/door/open', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),

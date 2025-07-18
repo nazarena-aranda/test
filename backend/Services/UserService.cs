@@ -41,7 +41,7 @@ namespace APIt.Services
                 }
 
                 var resultado = await _accessAgent.GenerateAccessAsync(tipoDoc, valorDoc, password);
-                string extractedPersonId = null;
+                string? extractedPersonId = null;
 
                 using JsonDocument doc = JsonDocument.Parse(resultado);
                 JsonElement root = doc.RootElement;
@@ -73,7 +73,7 @@ namespace APIt.Services
             }
         }
 
-        public async Task<User> GetUserByDocumentAsync(string tipoDoc, string valorDoc)
+        public async Task<User?> GetUserByDocumentAsync(string tipoDoc, string valorDoc)
         {
             try
             {
@@ -106,7 +106,7 @@ namespace APIt.Services
             }
         }
 
-        public bool FindUserByFace(float[] faceVector, float threshold = 0.60f)
+        public string? FindUserByFace(float[] faceVector, float threshold = 0.60f)
         {
             var pipeline = new[]
             {
@@ -129,29 +129,34 @@ namespace APIt.Services
 
             if (result.Count == 0)
             {
-                Console.WriteLine("❌ No se encontró ninguna cara similar.");
-                return false;
+                Console.WriteLine("❌ No similar face found.");
+                return null;
             }
 
-            Console.WriteLine("🕺 Similitud con la Base de Datos: 🕺");
-            bool foundMatch = false;
+            Console.WriteLine("🕵️‍♂️ Similarity results:");
+            string? bestMatchId = null;
+            double bestScore = threshold;
+
 
             foreach (var doc in result)
             {
-                var userId = doc.GetValue("user_id", new BsonString("Desconocido")).AsString;
-                var score = doc.GetValue("score", new BsonDouble(0)).ToDouble();
+                string userId = doc.GetValue("user_id", new BsonString("Unknown")).AsString;
+                double score = doc.GetValue("score", new BsonDouble(0)).ToDouble();
 
-                Console.WriteLine($"-> Usuario: {userId}, Similitud: {score:P2}"); // Score como porcentaje
+                Console.WriteLine($"-> User: {userId}, Similarity: {score:P2}");
 
-                if (score >= threshold)
+                if (score >= bestScore)
                 {
-                    Console.WriteLine($"✅ Match con usuario: {userId} (score: {score:P2})");
-                    foundMatch = true;
+                    bestScore = score;
+                    bestMatchId = userId;
+                }
+                else
+                {
+                    return null;
                 }
             }
-            
 
-            return foundMatch;
+            return bestMatchId;
         }
     }
 }
