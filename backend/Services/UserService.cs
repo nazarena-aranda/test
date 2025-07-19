@@ -106,57 +106,58 @@ namespace APIt.Services
             }
         }
 
-        public string? FindUserByFace(float[] faceVector, float threshold = 0.60f)
+public string? FindUserByFace(float[] faceVector, float threshold = 0.60f)
+{
+    var pipeline = new[]
+    {
+        new BsonDocument("$vectorSearch", new BsonDocument
         {
-            var pipeline = new[]
-            {
-                new BsonDocument("$vectorSearch", new BsonDocument
-                {
-                    { "index", "user_biometric_index" },
-                    { "queryVector", new BsonArray(faceVector) },
-                    { "path", "user_biometric" },
-                    { "numCandidates", 100 },
-                    { "limit", 5 }
-                }),
-                new BsonDocument("$project", new BsonDocument
-                {
-                    { "user_id", 1 },
-                    { "score", new BsonDocument("$meta", "vectorSearchScore") }
-                })
-            };
+            { "index", "user_biometric_index" },
+            { "queryVector", new BsonArray(faceVector) },
+            { "path", "user_biometric" },
+            { "numCandidates", 100 },
+            { "limit", 5 }
+        }),
+        new BsonDocument("$project", new BsonDocument
+        {
+            { "user_id", 1 },
+            { "score", new BsonDocument("$meta", "vectorSearchScore") }
+        })
+    };
 
-            var result = _usersCollection.Aggregate<BsonDocument>(pipeline).ToList();
+    var result = _usersCollection.Aggregate<BsonDocument>(pipeline).ToList();
 
-            if (result.Count == 0)
-            {
-                Console.WriteLine("❌ No similar face found.");
-                return null;
-            }
+    if (result.Count == 0)
+    {
+        Console.WriteLine("❌ No similar face found.");
+        return null;
+    }
 
-            Console.WriteLine("🕵️‍♂️ Similarity results:");
-            string? bestMatchId = null;
-            double bestScore = threshold;
+    Console.WriteLine("🕵️‍♂️ Similarity results:");
+    string? bestMatchId = null;
+    double bestMatchScore = threshold;
 
+    foreach (var doc in result)
+    {
+        string userId = doc.GetValue("user_id", new BsonString("Unknown")).AsString;
+        double score = doc.GetValue("score", new BsonDouble(0)).ToDouble();
 
-            foreach (var doc in result)
-            {
-                string userId = doc.GetValue("user_id", new BsonString("Unknown")).AsString;
-                double score = doc.GetValue("score", new BsonDouble(0)).ToDouble();
+        Console.WriteLine($"-> User: {userId}, Similarity: {score:P2}");
 
-                Console.WriteLine($"-> User: {userId}, Similarity: {score:P2}");
-
-                if (score >= bestScore)
-                {
-                    bestScore = score;
-                    bestMatchId = userId;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-
-            return bestMatchId;
+        if (score >= threshold && score > bestMatchScore)
+        {
+            bestMatchScore = score;
+            bestMatchId = userId;
         }
+    }
+
+    if (bestMatchId == null)
+        Console.WriteLine("❌ No face passed the similarity threshold.");
+    else
+        Console.WriteLine($"✅ Best match: {bestMatchId} with similarity {bestMatchScore:P2}");
+
+    return bestMatchId;
+}
+
     }
 }
