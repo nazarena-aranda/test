@@ -62,73 +62,84 @@ export default function LoginScreen() {
     return "#FAF9F9";
   };
 
-  const captureAndSendToBackend = async () => {
-    if (isProcessingOrUploading || hasFinished) return;
+const captureAndSendToBackend = async () => {
+  if (isProcessingOrUploading || hasFinished) return;
 
-    setIsProcessingOrUploading(true);
+  setIsProcessingOrUploading(true);
 
-    try {
-      setFlashOverlay(true);
-      await new Promise(resolve => setTimeout(resolve, 100));
+  try {
+    setFlashOverlay(true);
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-      const photo = await ref.current?.takePictureAsync({ quality: 0.9 });
+    const photo = await ref.current?.takePictureAsync({ quality: 0.9 });
 
-      if (photo?.uri) {
-        const manipulatedPhoto = await ImageManipulator.manipulateAsync(
-          photo.uri,
-          [{ flip: ImageManipulator.FlipType.Horizontal }],
-          { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
-        );
+    if (photo?.uri) {
+      const manipulatedPhoto = await ImageManipulator.manipulateAsync(
+        photo.uri,
+        [{ flip: ImageManipulator.FlipType.Horizontal }],
+        { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
+      );
 
-        const formData = new FormData();
-        formData.append(
-          mode === "biometric" ? "file" : "ImageFile",
-          {
-            uri: manipulatedPhoto.uri,
-            name: `camera_photo_${Date.now()}.jpg`,
-            type: "image/jpeg",
-          } as any
-        );
+      const formData = new FormData();
+      formData.append(
+        mode === "biometric" ? "file" : "ImageFile",
+        {
+          uri: manipulatedPhoto.uri,
+          name: `camera_photo_${Date.now()}.jpg`,
+          type: "image/jpeg",
+        } as any
+      );
 
-        const token = await TokenManager.getToken();
-
-        const response = await fetch(BACKEND_PROCESS_URL, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        });
-
-        if (response.ok) {
-          setAccessGranted(true);
-          setHasFinished(true);
-          setTimeout(() => navigation.navigate("Welcome"), 2000);
+      // ⬇️ Agregar doorId si es login
+      if (mode === "login") {
+        const storedDoor = await AsyncStorage.getItem("puerta");
+        if (storedDoor) {
+          formData.append("doorId", storedDoor);
         } else {
-          setAccessGranted(false);
-
-          if (mode === "login") {
-            setDeniedAttempts((prev) => {
-              const updated = prev + 1;
-              if (updated >= 3) {
-                setShowManualButton(true);
-              }
-              return updated;
-            });
-          }
-
-          setTimeout(() => {
-            setAccessGranted(null);
-          }, 2000);
+          console.warn("⚠️ No se encontró la puerta en AsyncStorage.");
         }
       }
-    } catch (err) {
-      console.error("Error al enviar foto:", err);
-      Alert.alert("Error", "No se pudo conectar con el servidor.");
-    } finally {
-      setIsProcessingOrUploading(false);
+
+      const token = await TokenManager.getToken();
+
+      const response = await fetch(BACKEND_PROCESS_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        setAccessGranted(true);
+        setHasFinished(true);
+        setTimeout(() => navigation.navigate("Welcome"), 2000);
+      } else {
+        setAccessGranted(false);
+
+        if (mode === "login") {
+          setDeniedAttempts((prev) => {
+            const updated = prev + 1;
+            if (updated >= 3) {
+              setShowManualButton(true);
+            }
+            return updated;
+          });
+        }
+
+        setTimeout(() => {
+          setAccessGranted(null);
+        }, 2000);
+      }
     }
-  };
+  } catch (err) {
+    console.error("Error al enviar foto:", err);
+    Alert.alert("Error", "No se pudo conectar con el servidor.");
+  } finally {
+    setIsProcessingOrUploading(false);
+  }
+};
+
 
 
   useEffect(() => {
