@@ -11,11 +11,13 @@ namespace APIt.Services
     public class DoorService : IDoorService
     {
         private readonly IMongoCollection<Door> _doorCollection;
-        private readonly IExternalAccessAgent _externalAccessAgent;
-        public DoorService(IMongoCollection<Door> doorCollection, IExternalAccessAgent externalAccessAgent)
+
+        private readonly IAccessAgent _accessAgent;
+        public DoorService(IMongoCollection<Door> doorCollection, IAccessAgent accessAgent)
         {
             _doorCollection = doorCollection;
-            _externalAccessAgent = externalAccessAgent;
+            _accessAgent = accessAgent;
+
         }
 
         public async Task<List<Door>> GetAllDoorsAsync()
@@ -68,7 +70,7 @@ namespace APIt.Services
                         .Select(id => int.Parse(id.Trim()))
                         .ToArray();
 
-                var response = await _externalAccessAgent.OpenDoorAsync(doorQR, personIds);
+                var response = await _accessAgent.OpenDoorAsync(doorQR, personIds);
 
                 return "The door was opened successfully";
             }

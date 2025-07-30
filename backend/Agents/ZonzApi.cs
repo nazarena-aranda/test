@@ -1,37 +1,67 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
-
-
-public class InternalAccessAgent : IAccessAgent
+namespace APIt.Agent
 {
-    private readonly HttpClient _httpClient;
-
-    public InternalAccessAgent(HttpClient httpClient)
+    public class AccessAgent : IAccessAgent
     {
-        _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("https://zonago.zonamerica.com/");
-    }
+        private readonly HttpClient _httpClient;
 
-    public async Task<string> GenerateAccessAsync(string tipoDoc, string valorDoc, string pass)
-    {
-        var payload = new
+        public AccessAgent(HttpClient httpClient)
         {
-            documentType = tipoDoc,
-            documentNumber = valorDoc,
-            password = pass
-        };
-
-        var response = await _httpClient.PostAsJsonAsync("api/auth", payload);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Error: {response.StatusCode}, Detail: {errorContent}");
+            _httpClient = httpClient;
+            _httpClient.BaseAddress = new Uri("https://zonago.zonamerica.com/");
         }
 
-        return await response.Content.ReadAsStringAsync();
+        public async Task<string> GenerateAccessAsync(string tipoDoc, string valorDoc, string pass)
+        {
+            var payload = new
+            {
+                documentType = tipoDoc,
+                documentNumber = valorDoc,
+                password = pass
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("api/auth", payload);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Error: {response.StatusCode}, Detail: {errorContent}");
+            }
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> OpenDoorAsync(string puerta, int[] personIds)
+        {
+            var payload = new
+            {
+                Username = "appaccesoza",
+                Password = "gQtu,&7-",
+                Puerta = puerta,
+                PersonIDs = personIds
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/Access/GenerateAccess")
+            {
+                Content = JsonContent.Create(payload)
+            };
+
+            request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json-patch+json");
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Error: {response.StatusCode}, Detail: {error}");
+            }
+
+            return await response.Content.ReadAsStringAsync();
+        }
     }
 }

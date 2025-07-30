@@ -1,6 +1,11 @@
 using System.Threading.Tasks;
-public interface IAccessAgent
-{
-    Task<string> GenerateAccessAsync(string tipoDoc, string valorDoc, string password);
-}
 
+namespace APIt.Agent
+{
+    public interface IAccessAgent
+    {
+        Task<string> GenerateAccessAsync(string tipoDoc, string valorDoc, string pass);
+        Task<string> OpenDoorAsync(string puerta, int[] personIds);
+    }
+
+}

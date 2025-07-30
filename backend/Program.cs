@@ -9,7 +9,7 @@ using APIt.Services;
 using MongoDB.Driver;
 using APIt.Resources.Models;
 using Microsoft.AspNetCore.Hosting;
-
+using APIt.Agent;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -102,7 +102,8 @@ builder.Services.AddSwaggerGen(c =>
     c.OperationFilter<FileUploadOperationFilter>();
 
 });
-builder.Services.AddHttpClient<IAccessAgent, InternalAccessAgent>();
+builder.Services.AddHttpClient<IAccessAgent, AccessAgent>();
+
 
 
 builder.Services.AddScoped<IUserService, UserService>();

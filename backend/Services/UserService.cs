@@ -106,7 +106,7 @@ namespace APIt.Services
             }
         }
 
-public string? FindUserByFace(float[] faceVector, float threshold = 0.60f)
+public async Task<string?> FindUserByFaceAsync(float[] faceVector, float threshold = 0.65f)
 {
     var pipeline = new[]
     {
@@ -125,7 +125,7 @@ public string? FindUserByFace(float[] faceVector, float threshold = 0.60f)
         })
     };
 
-    var result = _usersCollection.Aggregate<BsonDocument>(pipeline).ToList();
+    var result = await _usersCollection.Aggregate<BsonDocument>(pipeline).ToListAsync();
 
     if (result.Count == 0)
     {
@@ -158,6 +158,7 @@ public string? FindUserByFace(float[] faceVector, float threshold = 0.60f)
 
     return bestMatchId;
 }
+
 
     }
 }

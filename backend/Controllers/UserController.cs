@@ -138,54 +138,57 @@ public class zonamericaController : ControllerBase
     // Endpoint para validar el acceso de un usuario ( y vector facial)
 
     [HttpPost("login")]
-public async Task<IActionResult> Login([FromForm] LoginDto request)
-{
-    if (request.ImageFile == null || request.ImageFile.Length == 0)
+    public async Task<IActionResult> Login([FromForm] LoginDto request)
     {
-        return BadRequest("No image provided.");
-    }
-
-    // Copiar archivo a memoria
-    await using var ms = new MemoryStream();
-    await request.ImageFile.CopyToAsync(ms);
-    ms.Position = 0;
-
-
-    // Procesar imagen
-    ms.Position = 0;
-    using var image = Image.Load<Rgb24>(ms);
-
-    var detector = FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks();
-    var generator = FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator();
-
-    var faces = detector.DetectFaces(image);
-    if (faces.Count == 0)
-        return BadRequest("No face detected in the image.");
-
-    var face = faces.First();
-    generator.AlignFaceUsingLandmarks(image, face.Landmarks!);
-    var faceVectors = generator.GenerateEmbedding(image);
-
-    // Comparar vectores
-    var match = _userService.FindUserByFace(faceVectors, 0.60f);
-
-    if (match != null)
-    {
-        try
+        if (request.ImageFile == null || request.ImageFile.Length == 0)
         {
-            await _doorService.OpenDoor(request.doorQR, match);
-            return Ok(new { message = "Access granted. Door opened." });
+            return BadRequest("No image provided.");
         }
-        catch (Exception ex)
+
+        // Copiar archivo a memoria
+        await using var ms = new MemoryStream();
+        await request.ImageFile.CopyToAsync(ms);
+        ms.Position = 0;
+
+
+        // Procesar imagen
+        ms.Position = 0;
+        using var image = Image.Load<Rgb24>(ms);
+
+        var detector = FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks();
+        var generator = FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator();
+
+        var faces = detector.DetectFaces(image);
+        if (faces.Count == 0)
+            return BadRequest("No face detected in the image.");
+
+        var face = faces.First();
+        generator.AlignFaceUsingLandmarks(image, face.Landmarks!);
+        var faceVectors = generator.GenerateEmbedding(image);
+
+        // Comparar vectores
+        var match = await _userService.FindUserByFaceAsync(faceVectors, 0.60f);
+
+        if (match != null)
         {
-            return StatusCode(403, new { message = $"{ex} Access granted, but user is not authorized to open this door." });
+            try
+            {
+                await _doorService.OpenDoor(request.doorQR, match);
+                await _doorService.RegisterSuccessfulAccessAsync(request.doorQR);
+                return Ok(new { message = "Access granted. Door opened." });
+            }
+            catch (Exception ex)
+            {
+                await _doorService.RegisterFailedAccessAsync(request.doorQR);
+                return StatusCode(403, new { message = $"{ex} Access granted, but user is not authorized to open this door." });
+            }
+        }
+        else
+        {
+            await _doorService.RegisterFailedAccessAsync(request.doorQR);
+            return Unauthorized(new { message = "Access denied. Face does not match." });
         }
     }
-    else
-    {
-        return Unauthorized(new { message = "Access denied. Face does not match." });
-    }
-}
 
 
 }
