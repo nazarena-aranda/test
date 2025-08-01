@@ -16,6 +16,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import * as ImageManipulator from "expo-image-manipulator";
 import TokenManager from "../utils/TokenManager";
 import { styles } from "../Styles/LoginStyle";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RootStackParamList = {
   LoginScreen: {
@@ -90,11 +91,11 @@ const captureAndSendToBackend = async () => {
         } as any
       );
 
-      // ⬇️ Agregar doorId si es login
+      // ⬇️ Agregar doorQR si es login
       if (mode === "login") {
         const storedDoor = await AsyncStorage.getItem("puerta");
         if (storedDoor) {
-          formData.append("doorId", storedDoor);
+          formData.append("doorQR", storedDoor);
         } else {
           console.warn("⚠️ No se encontró la puerta en AsyncStorage.");
         }

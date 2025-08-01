@@ -6,6 +6,7 @@ using System.Text.Json;
 using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
+using APIt.Agent;
 
 namespace APIt.Services
 {
