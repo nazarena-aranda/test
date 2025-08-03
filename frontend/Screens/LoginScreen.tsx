@@ -49,8 +49,8 @@ export default function LoginScreen() {
 
   const BACKEND_PROCESS_URL =
     mode === "biometric"
-      ? "http://172.20.10.11:5001/api/zonamerica/biometric"
-      : "http://172.20.10.11:5001/api/zonamerica/login";
+      ? "http://mvp-holberton.zonamerica.com:8000/api/zonamerica/biometric"
+      : "http://mvp-holberton.zonamerica.com:8000/api/zonamerica/login";
 
   const CAPTURE_INTERVAL_MS = 2000;
 

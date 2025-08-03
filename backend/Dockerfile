@@ -9,7 +9,14 @@ RUN dotnet build "APIt.csproj" -c Release -o /app/build
 FROM build AS publish
 RUN dotnet publish "APIt.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
+
+
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
+
+EXPOSE 8000
+
+ENV ASPNETCORE_URLS=http://0.0.0.0:8000
+
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "APIt.dll"]
