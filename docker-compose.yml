@@ -10,4 +10,6 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:8000
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings=mongodb://host.docker.internal:27017
+      - ConnectionStrings__MongoDB=mongodb+srv://nazarena:naza.12345@cluster0.wjovzmn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+
